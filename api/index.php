@@ -13,11 +13,9 @@
 	}
 	
 	define('HOST',"localhost");
-	define('DBNAME',"localhost");
-	define('USER',"localhost");
-	define('PWD',"localhost");
-	
-	$db = getDBConnection('mysql:host='.HOST.';dbname='.DBNAME, USER, PWD);
+	define('DBNAME',"geogame");
+	define('USER',"root");
+	define('PWD',"");
 	
 	header('Content-type:application/json; charset=utf-8');
 	
@@ -26,7 +24,16 @@
 	*/
 	
 	$app->get('/pictures', function() {
+		$db = getDBConnection('mysql:host='.HOST.';dbname='.DBNAME, USER, PWD);
 		$data = array('pictures' => []);
+		
+		$selection = $db->prepare('SELECT * FROM user');
+		$success = $selection->execute();
+		$results = $selection->fetchAll();
+		foreach($results as $index => $row) {
+			echo("index: {$index}, id: {$row['ID']}, name: {$row['Name']}<br>");
+		}
+		
 		$json = json_encode($data);
 		echo $json;
 	});
