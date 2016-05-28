@@ -1,0 +1,195 @@
+body {
+    overflow: hidden; /* Never scroll */
+}
+
+.headerText {
+    text-align: center;
+}
+
+.center {
+    margin: auto;
+}
+
+.centerButtons {
+    text-align: center;
+}
+
+.loginSize {
+    width: 400px;
+    margin: auto;
+}
+
+.contentSize {
+    overflow: hidden; /* Never scroll */
+    width: 90%;
+    margin: auto;
+    margin-top: 30px;
+}
+
+/* Styles the mainscreen buttons */
+.button {
+    width: 200px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    margin-top: 10px;
+}
+
+/* Styles the Highscore table*/
+.table-responsive {
+    width: 80%;
+    margin-bottom: 20px;
+}
+
+tr {
+    float: left;
+    width: 100%;
+    padding: 7px 0px 5px 7px;
+
+}
+
+tbody > tr {
+    border-top: 1px solid lightgray;
+}
+
+td, th {
+    display: table-cell;
+    float: left;
+    width: 25%;
+    text-align: center;
+    font-size: large;
+}
+
+tbody.panel-body {
+    overflow-y: scroll; /* Let it scroll!*/
+    max-height: 140px;
+    padding: 0;
+    display: inline-block;
+    width: 100%;
+    border: 1px solid #337ab7;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+thead {
+    display: inline-block;
+    width: 100%;
+}
+
+.panel-primary > .panel-heading {
+    padding: 3px 5px;
+}
+
+.panel-primary {
+    border: hidden;
+}
+
+.input-config {
+    width: 250px;
+}
+
+.input-login {
+    width: 200px;
+}
+
+/* styles the alert when you put wrong login data */
+.alert {
+    width: 50%;
+    margin: auto;
+    margin-top: 10px;
+    text-align: center;
+}
+
+p.input-addon-login {
+    text-align: right;
+    width: 175px;
+}
+
+p.input-addon-login2 {
+    text-align: right;
+    width: 125px;
+    font-weight: bold;
+}
+
+h4.input-group-addon {
+    text-align: right;
+    width: 160px;
+}
+
+.input-group {
+    margin-bottom: 10px;
+}
+
+.text-danger {
+    text-align: center;
+}
+
+/* Styles the place for the buttons at the bottom in the screens*/
+.buttonContainer {
+    margin-bottom: 30px;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    text-align: center;
+}
+
+input.login {
+    margin-bottom: 20px;
+}
+
+input.btn {
+    margin-top: 20px;
+}
+
+.inline {
+    display: inline;
+}
+
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0, 0, 0); /* Fallback color */
+    background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+}
+
+#range {
+    border: 0;
+    color: #f6931f;
+    font-weight: bold;
+    float: right;
+    width: 120px;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* Modal Content/Box */
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%;
+}
+
+/* The Button to close the modal */
+#closeModal {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+#closeModal:hover,
+#closeModal:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
