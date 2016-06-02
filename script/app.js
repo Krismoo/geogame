@@ -5,7 +5,7 @@
 var iHaveAbsoluteNofunctionalityIswearOnMeMomMate = 0;
 var range = [5, 15]; //default range beetween range[0] and range[1] (in km)
 var difficulty = "middle"; //TODO: difficulty still needs to be defined
-
+var MAX_RANGE = [1,100];//this will be a range from 1km to >99km
 $(document).ready(function () {
     login.openLoginScreen();
     /* TODO: Needed?
@@ -159,7 +159,7 @@ var main = {
         eraseScreen();
         var mainscreen = "<header><h1 class='headerText'>GEO GAME</h1></header>" +
             "<section class='centerButtons'>" +
-            "<button id='newGameButton' class='button btn btn-default'>New Game</button><br/>" +
+            "<button id='newGameButton' class='button btn btn-default'>Play!</button><br/>" +
             "<button id='highscoreButton' class='button btn btn-default'>Highscore</button><br/>" +
             "<button id='configButton' class='button btn btn-default'>Config</button><br/>" +
             "<button id='aboutButton' class='button btn btn-default'>About</button><br/>" +
@@ -283,9 +283,9 @@ var config = {
             "<div class='center input-group input-config'>" +
             "<p class='input-group-addon input-addon-login2'>Schwierigkeit: </p>" +
             "<select id='difficulty' class='form-control'>" +
-            "<option value='difficult'>Schwer</option>" +
-            "<option value='middle'>Mittel</option>" +
             "<option value='easy'>Leicht</option>" +
+            "<option value='middle'>Mittel</option>" +
+            "<option value='difficult'>Schwer</option>" +
             "</select> " +
             "</div>" +
             "<div class='center panel panel-default'>" +
@@ -308,12 +308,17 @@ var config = {
 
         $("#slider-range").slider({
             range: true,
-            min: 1,
-            max: 200,
+            min: MAX_RANGE[0],
+            max: MAX_RANGE[1],
             values: [range[0], range[1]],
             slide: function (event, ui) {
-                $("#range").val(ui.values[0] + "km - " + ui.values[1] + "km");
-                newRange = [ui.values[0], ui.values[1]];
+                if (ui.values[1] === MAX_RANGE[1]) {
+                    $("#range").val(ui.values[0] + "km - >" + (ui.values[1]-1) + "km");
+                    newRange = [ui.values[0], ui.values[1]];
+                } else {
+                    $("#range").val(ui.values[0] + "km - " + ui.values[1] + "km");
+                    newRange = [ui.values[0], ui.values[1]];
+                }
             }
         });
 
