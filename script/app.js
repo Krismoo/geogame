@@ -1,13 +1,16 @@
 /**
  * Place for all the global variables like config stuff
- * TODO: better to put the config in the gamescreen variable?
+ * TODO: better to put the variables in the vars they belong?
+ *          => like config stuff into "config"
  */
 var iHaveAbsoluteNofunctionalityIswearOnMeMomMate = 0;
 var range = [5, 15]; //default range beetween range[0] and range[1] (in km)
 var difficulty = "middle"; //TODO: difficulty still needs to be defined
-var MAX_RANGE = [1,100];//this will be a range from 1km to >99km
+var MAX_RANGE = [1, 100];//this will be a range from 1km to >99km
+
 $(document).ready(function () {
     login.openLoginScreen();
+
     /* TODO: Needed?
      $('body').on('click', 'button', function (event) {
      event.preventDefault();
@@ -144,7 +147,7 @@ var login = {
     },
     loginFailed: function () {
         $(".alert").remove();
-        $("main").append("<h4 class='alert alert-danger' role='alert'>Falsche Login Daten!</h4>");
+        $("main").append("<h4 class='alert alert-danger' role='alert'>Wrong Login Data!</h4>");
     }
 }
 
@@ -204,20 +207,121 @@ var game = {
      */
     openGamescreen: function () {
         eraseScreen();
-        var loginScreen = "<section class='contentSize' style='text-align: center'>" +
-            "<iframe width='315' height='236' src='https://www.youtube.com/embed/5NNOrp_83RU' frameborder='0' allowfullscreen></iframe>" +
-                //TODO: Create Gamescreen
 
-            "<br/><div class='buttonContainer'>" +
-            "<button id='zurueckButtonG' class='button btn btn-default'>Zurück</button>" +
-            "</div>" +
+        var gameScreen = "<header><h3 class='headerText'>Go to the place on this Picture" +
+            "<button id='zurueckButtonG' class='menubtn btn btn-default'>Menu</button></h3></header>" +
+            "<section>" +
+            "<div id='myCarousel' class='carousel slide' data-ride='carousel'></div>" +
+            "<div class='menu'></div>" +
             "</section>";
-        $("main").append(loginScreen);
+
+        var carouselNode = "" +
+            "<ol class='carousel-indicators'>" +
+            "<!-- Indicators! -->" +
+            "</ol>" +
+
+            "<!-- Wrapper for slides -->" +
+            "<div class='carousel-inner' role='listbox'>" +
+            "<!--Pictures! -->" +
+            "</div>" +
+
+            "<!-- Left and right controls -->" +
+            "<a class='left carousel-control' href='#myCarousel' role='button' data-slide='prev'>" +
+            "<span class='glyphicon glyphicon-chevron-left' aria-hidden='true'></span>" +
+            "<span class='sr-only'>Previous</span>" +
+            "</a>" +
+            "<a class='right carousel-control' href='#myCarousel' role='button' data-slide='next'>" +
+            "<span class='glyphicon glyphicon-chevron-right' aria-hidden='true'></span>" +
+            "<span class='sr-only'>Next</span>" +
+            "</a>";
+
+        var pictureNodes = "";
+        var indicatorNodes = "";
+
+        //TODO: This should use "loadPictures()" and get the pictures on the right way!
+        for (var i = 1; i <= 10; i++) {
+            var number;
+            if (i < 10) {
+                number = "00" + i;
+            } else if (i < 100) {
+                number = "0" + i;
+            } else {
+                console.error("Cannot proceed more than 99 Pictures!");
+            }
+
+            //TODO: http://www.w3schools.com/bootstrap/bootstrap_carousel.asp
+            //TODO: Indicator (circle at the bottom) doesnt work
+            if (i === 1) {
+                pictureNodes += "<div class='item item-active active'>" +
+                    "<img src='Assets/Pictures/GeoGame_Picture_" + number + ".jpg' alt='Picture'>" +
+                    "</div>";
+                indicatorNodes += "<li data-target='#myCarousel' data-slide-to='" + (i-1) + "' class='active'></li>";
+            } else {
+                pictureNodes += "<div class='item'>" +
+                    "<img src='Assets/Pictures/GeoGame_Picture_" + number + ".jpg' alt='Picture'>" +
+                    "</div>";
+                indicatorNodes += "<li data-target='#myCarousel' data-slide-to='" + (i - 1) + "'></li>";
+
+            }
+
+        }
+        var points = 666;//game.getPointsOfActualGame();
+        var menuNode = "<input id='checkLocationButton' type='submit' value='Check Location' class='btn btn-lg btn-default'/>" +
+            "<h3>Points: " + points + "</h3>" +
+            "<input id='giveAHint' type='submit' value='Give me a hint' class='btn btn btn-default'/><br/>" +
+            "<input id='skipPicture' type='submit' value='Skip Picture' class='btn btn btn-default'/>";
+
+
+        $("main").append(gameScreen);
+        $(".carousel").append(carouselNode);
+        $(".carousel-inner").append(pictureNodes);
+        $(".carousel-indicators").append(indicatorNodes);
+        $(".menu").append(menuNode);
+
+        $('body').on('click', '#checkLocationButton', function (event) {
+            event.preventDefault();
+            game.checkLocation();
+        });
+
+        $('body').on('click', '#giveAHint', function (event) {
+            event.preventDefault();
+            game.giveAHint();
+        });
+
+        $('body').on('click', '#skipPicture', function (event) {
+            event.preventDefault();
+            game.skipPicture();
+        });
 
         $('body').on('click', '#zurueckButtonG', function (event) {
             event.preventDefault();
             main.openMainscreen();
         });
+    },
+
+    //TODO: IMPLEMENT "loadPictures"
+    loadPictures: function () {
+    },
+
+    //TODO: IMPLEMENT "giveAHint"
+    giveAHint: function () {
+        var hint;
+        //TODO load here hint!
+        hint = "I am an useless hint!"
+        //TODO take away some points!
+        alert(hint);
+    },
+
+    //TODO: IMPLEMENT "skipPicture"
+    skipPicture: function () {
+    },
+
+    //TODO: IMPLEMENT "getPointsOfActualGame"
+    getPointsOfactualGame: function () {
+    },
+
+    //TODO: IMPLEMENT "loadPictures"
+    checkLocation: function () {
     }
 }
 
@@ -313,7 +417,7 @@ var config = {
             values: [range[0], range[1]],
             slide: function (event, ui) {
                 if (ui.values[1] === MAX_RANGE[1]) {
-                    $("#range").val(ui.values[0] + "km - >" + (ui.values[1]-1) + "km");
+                    $("#range").val(ui.values[0] + "km - >" + (ui.values[1] - 1) + "km");
                     newRange = [ui.values[0], ui.values[1]];
                 } else {
                     $("#range").val(ui.values[0] + "km - " + ui.values[1] + "km");
