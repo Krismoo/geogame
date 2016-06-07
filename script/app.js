@@ -369,6 +369,7 @@ var highscore = {
 
     loadHighscores: function () {
         //TODO: load ALLLLL the highsocredata
+
     }
 }
 
