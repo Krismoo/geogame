@@ -26,7 +26,6 @@ body {
     margin-top: 30px;
 }
 
-
 /*Gameview styles*/
 
 .carousel {
@@ -45,6 +44,7 @@ body {
     text-align: center;
     width: 30%;
 }
+
 .menubtn {
     float: right;
     margin-right: 30px;
@@ -81,6 +81,11 @@ td, th {
     width: 25%;
     text-align: center;
     font-size: large;
+}
+
+#slider-range {
+    margin: 10px;
+    margin-bottom: 10px;
 }
 
 tbody.panel-body {
@@ -121,6 +126,10 @@ thead {
     margin: auto;
     margin-top: 10px;
     text-align: center;
+}
+
+p.item {
+    margin-bottom: 0px;
 }
 
 p.input-addon-login {
