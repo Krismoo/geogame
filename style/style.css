@@ -58,6 +58,11 @@ body {
     margin-top: 10px;
 }
 
+#usernameInput, #passwordInput {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
 /* Styles the Highscore table*/
 .table-responsive {
     width: 80%;

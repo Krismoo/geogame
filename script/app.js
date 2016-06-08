@@ -34,6 +34,7 @@ $(document).ready(function () {
 function openLoginScreen() {
     eraseScreen();
     login.createAndAppendLoginView();
+    login.createAndAppendRegistrationPopup();
 }
 
 /**
@@ -99,14 +100,14 @@ var login = {
             "<section class='loginSize panel panel-default panel-body'>" +
             "<form>" +
             "<section class='input-group input-group-lg'>" +
-            "<h4  class='input-group-addon input-addon-login'>Benutzername: </h4>" +
-            "<input class='form-control' id='benutzernameInput' placeholder='Benutzername' type='text'/></br>" +
+            "<h4  class='input-group-addon input-addon-login'>Username: </h4>" +
+            "<input class='form-control' id='usernameInput' placeholder='Username' type='text'/></br>" +
             "</section>" +
             "<section class='input-group input-group-lg'>" +
-            "<h4  class='input-group-addon input-addon-login'>Passwort: </h4>" +
-            "<input class='form-control' id='passwortInput' placeholder='Passwort' type='password'/></br>" +
+            "<h4  class='input-group-addon input-addon-login'>Password: </h4>" +
+            "<input class='form-control' id='passwordInput' placeholder='Password' type='password'/></br>" +
             "</section>" +
-            "<input id='registrierenButton' type='submit' value='Registrieren' class='btn btn-lg btn-default'/>" +
+            "<input id='registerButton' type='submit' value='Register' class='btn btn-lg btn-default'/>" +
             "<input id='loginButton' type='submit' value='Login' class='btn btn-lg btn-default' style='float: right'/>" +
             "</form>" +
             "</section>";
@@ -117,125 +118,122 @@ var login = {
      * This function adds the Listener to the buttons
      */
     addButtonListeners: function () {
-        $('body').on('click', '#registrierenButton', function (event) {
+        $('body').on('click', '#registerButton', function (event) {
             event.preventDefault();
-            login.createAndAppendRegistrationPopup();
+            $("#createUserModal").show();
+
+          //  login.createAndAppendRegistrationPopup();
         });
 
         $('body').on('click', '#loginButton', function (event) {
             event.preventDefault();
-            login.loginCheck($("#benutzernameInput").val(), $("#passwortInput").val());
+            login.loginCheck($("#usernameInput").val(), $("#passwordInput").val());
+        });
+        // TODO MODALALALAFOWWG%IO
+        $('body').on('click', '#closeModal', function (event) {
+            event.preventDefault();
+            $("#createUserModal").hide();
+        });
+
+
+        window.onclick = function(event) {
+            if (event.target == $("#createUserModal")) {
+                $("#createUserModal").hide();
+            }
+        }
+
+        //TODO to listeners where it belongs!!
+        $('body').on('click', '#registrationSubmitButton', function (event) {
+            event.preventDefault();
+            login.createUser($("#newUsernameInput").val(), $("#newPasswordInput").val(), $("#newPassword2Input").val());
         });
     },
 
     /**
      * This function creates and appends the Popup to create a new user
      */
+    //TODO append YES but we cant see it!
     createAndAppendRegistrationPopup: function () {
-        var registerForm = "<header><h4  class='headerText'>Registrieren</h4></header>" +
+        var registerForm = "<header><h4  class='headerText'>Register</h4></header>" +
             "<section  class='center loginSize'>" +
             "<form>" +
             "<section class='input-group'>" +
-            "<p class='input-group-addon input-addon-login'>Benutzername:</p>" +
-            "<input class='form-control' id='usernameInput' type='text'>" +
+            "<p class='input-group-addon input-addon-login'>Username:</p>" +
+            "<input class='form-control' id='newUsernameInput' type='text'>" +
             "</section>" +
             "<section class='input-group'>" +
-            "<p class='input-group-addon input-addon-login'>Passwort:</p>" +
-            "<input class='form-control' id='passwordInput' type='password'>" +
+            "<p class='input-group-addon input-addon-login'>Password:</p>" +
+            "<input class='form-control' id='newPasswordInput' type='password'>" +
             "</section>" +
             "<section class='input-group'>" +
-            "<p class='input-group-addon input-addon-login'>Passwort wiederholen:</p>" +
-            "<input class='form-control' id='password2Input' type='password'>" +
+            "<p class='input-group-addon input-addon-login'>Password repeat:</p>" +
+            "<input class='form-control' id='newPassword2Input' type='password'>" +
             "</section>" +
-            "<input id='registrationSubmitButton' type='submit' value='Registrieren' class='btn btn-default'>" +
+            "<input id='registrationSubmitButton' type='submit' value='Register' class='btn btn-default'>" +
             "</form>" +
             "</section>";
+
         var registrationPopup = "<section id='createUserModal' class='modal'>" +
             "<section class='modal-content'>" +
             "<p id='closeModal'>x</p>" + registerForm + "</section>" +
             "</section>";
         $("main").append(registrationPopup);
-
-        $('body').on('click', '#registrationSubmitButton', function (event) {
-            event.preventDefault();
-            login.createUser($("#usernameInput").val(), $("#passwordInput").val(), $("#password2Input").val());
-        });
-        var modal = document.getElementById('createUserModal');
-        var span = document.getElementById("closeModal");
-
-        modal.style.display = "block";
-
-        // When the user clicks on x, close the modal
-        span.onclick = function () {
-            event.preventDefault();
-            modal.style.display = "none";
-        }
-
-        // When the user clicks anywhere outside of the modal, close it
-        window.onclick = function (event) {
-            event.preventDefault();
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
     },
 
     /**
      * This function sends a POST with ajax to create a user
      */
-    //TODO: HTTP POST / ajax um den User in der db zu registrieren
+//TODO: HTTP POST / ajax um den User in der db zu registrieren
     createUser: function (username, password, password2) {
-        if (password === password2) {
+        console.log(password + " : " + password2);
+        removeErrorMessage();
+        if (password.length > 0 && (password === password2)) {
+            var request = Array(2);
+            request["name"] = username;
+            request["password"] = password;
             $.ajax({
                 url: "api/register",
-                data: {},
+                data: request,
                 dataType: "json",
-                success: function (data) {
-                    //TODO register!
+                type: "POST",
+                success: function (response) {
+                    console.log("ajax createUser POST success");
+                    console.log(response);
+                    if (response['message'] !== null) {
+                        createAndAppendErrorMessage($("section.modal-content"), response['message']);
+                    } else {
+                        $("#usernameInput").val(response["name"]);
+                        $("#passwordInput").val(response["password"]);
+                        $("#createUserModal").hide();
+                    }
                 },
-                error: function () {
-                    //TODO
+                error: function (responseError) {
+                    createAndAppendErrorMessage($("section.modal-content"), responseError['message']);
                 }
             });
         } else {
-            //TODO
+            createAndAppendErrorMessage($("section.modal-content"), "Check password!");
         }
 
-    },
+    }
+    ,
 
     /**
      * This function logs the user in
      */
-    loginCheck: function (benutzername, passwort) {
+    loginCheck: function (username, password) {
         //TODO: database check user&&pw
 
         var successful = true;
-        if (benutzername === "false") {
+        if (username === "false") {
             successful = false;
         }
 
         if (successful) {
             openMainScreen();
         } else {
-            login.loginFailed();
+            createAndAppendErrorMessage($("main"), "Wrong Login Data!");
         }
-    },
-
-    /**
-     * This function gets called if the login failed
-     */
-    loginFailed: function () {
-        $(".alert").remove();
-        $("main").append("<h4 class='alert alert-danger' role='alert'>Wrong Login Data!</h4>");
-    },
-
-    /**
-     * This function gets called if the registration failed
-     */
-    //TODO: USE IT
-    registrationFailed: function () {
-        $(".alert").remove();
-        $("main").append("<h4 class='alert alert-danger' role='alert'>Wrong Login Data!</h4>");
     }
 }
 
@@ -624,11 +622,27 @@ function eraseScreen() {
  * This creates, once and for all, all the listeners
  * Like this, we can prevent adding the same listener multiple times to an element
  */
-function addListeners(){
+function addListeners() {
     login.addButtonListeners();
     game.addButtonListeners();
     main.addButtonListeners();
     highscore.addButtonListeners();
     config.addButtonListeners();
     about.addButtonListeners();
+}
+
+/**
+ * creates and appends an error message to a node
+ */
+//TODO: USE IT
+function createAndAppendErrorMessage(node, message) {
+    removeErrorMessage();
+    node.append("<h4 class='alert alert-danger' role='alert'>" + message + "</h4>");
+}
+
+/**
+ * removes all alerts
+ */
+function removeErrorMessage() {
+    $(".alert").remove();
 }
