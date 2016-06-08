@@ -9,7 +9,6 @@
 var range = [5, 15]; //default range beetween range[0] and range[1] (in km)
 var difficulty = "middle"; //TODO: difficulty still needs to be defined
 const MAX_RANGE = [1, 100];//this will be a range from 1km to >99km
-var lhcount = 0;
 
 $(document).ready(function () {
     openLoginScreen();
@@ -459,9 +458,6 @@ var highscore = {
      * This function loads the highscores and appends them to the table
      */
     loadHighscores: function () {
-        lhcount++;
-        console.log("Times called loadHighscores:" + lhcount)
-        //TODO: OMG JUST REMOVE THEM BEFORE ADDING THEM AGAIN!!! -> Buttonlisteners are mean!
         $("tr.content").remove();
         var i = 1;
         $.ajax({
@@ -480,7 +476,6 @@ var highscore = {
                 $(".panel-body tr").remove();
             }
         });
-
     },
 
     /**
