@@ -1,17 +1,19 @@
 /**
- * Place for all the global variables like config stuff
- * TODO: better to put the variables in the vars they belong?
+ * TODO: better to put the variables in the vars they belong? SIMON?
  *          => like config stuff into "config"
  */
-var iHaveAbsoluteNofunctionalityIswearOnMeMomMate = 0;
+///////////////////////////////////////////
+// Here all global variables get defined //
+///////////////////////////////////////////
+
 var range = [5, 15]; //default range beetween range[0] and range[1] (in km)
 var difficulty = "middle"; //TODO: difficulty still needs to be defined
-var MAX_RANGE = [1, 100];//this will be a range from 1km to >99km
+const MAX_RANGE = [1, 100];//this will be a range from 1km to >99km
 
 $(document).ready(function () {
-    login.openLoginScreen();
-
-    /* TODO: Needed?
+    openLoginScreen();
+    addListeners();
+    /* TODO: Needed? @SIMON
      $('body').on('click', 'button', function (event) {
      event.preventDefault();
      window.navigator.geolocation.getCurrentPosition(function (position) {
@@ -22,99 +24,148 @@ $(document).ready(function () {
      */
 });
 
+//////////////////////////////////////
+// Here all the screens get defined //
+//////////////////////////////////////
 
 /**
- * Here the section starts where all the screens get defined
+ * This function opens the Login page
  */
+function openLoginScreen() {
+    eraseScreen();
+    login.createAndAppendLoginView();
+}
+
+/**
+ * This function opens the game screen
+ */
+function openGameScreen() {
+    eraseScreen();
+    game.createAndAppendGameView();
+    game.createAndAppendCarouselNode();
+    var loadedPictures = game.loadPictures();
+    game.appendPictureAndIndicatorNodesInCarousel(loadedPictures);
+    var actualPoints = game.getPointsOfActualGame();
+    var menuNode = game.createMenuNode(actualPoints);
+}
+
+/**
+ * This function opens the MainScreen
+ */
+function openMainScreen() {
+    eraseScreen();
+    main.createAndAppendMainView();
+}
+
+/**
+ * This function opens the highscore screen
+ */
+function openHighscoreScreen() {
+    eraseScreen();
+    highscore.openAndCreateHighscoreView();
+    highscore.loadHighscores();
+}
+
+/**
+ * This function opens the config screen
+ */
+function openConfigScreen() {
+    eraseScreen();
+    config.createAndAppendConfigView();
+    config.intializeSettings();
+}
+
+/**
+ * This function opens the about screen
+ */
+function openAboutScreen() {
+    eraseScreen();
+    about.createAndAppendAboutView();
+}
+
+////////////////////////////////////////
+// Here all the functions get defined //
+////////////////////////////////////////
 
 /**
  * This variable defines all the functions for the loginscreen
  */
 var login = {
     /**
-     * This function opens the Login page
+     * This function creates the login screen and appends it to main
      */
-    openLoginScreen: function () {
-        eraseScreen();
+    createAndAppendLoginView: function () {
         var loginScreen = "<header><h1 class='headerText'>GEO GAME</h1></header>" +
             "<section class='loginSize panel panel-default panel-body'>" +
             "<form>" +
-            "<div class='input-group input-group-lg'>" +
+            "<section class='input-group input-group-lg'>" +
             "<h4  class='input-group-addon input-addon-login'>Benutzername: </h4>" +
             "<input class='form-control' id='benutzernameInput' placeholder='Benutzername' type='text'/></br>" +
-            "</div>" +
-            "<div class='input-group input-group-lg'>" +
+            "</section>" +
+            "<section class='input-group input-group-lg'>" +
             "<h4  class='input-group-addon input-addon-login'>Passwort: </h4>" +
             "<input class='form-control' id='passwortInput' placeholder='Passwort' type='password'/></br>" +
-            "</div>" +
+            "</section>" +
             "<input id='registrierenButton' type='submit' value='Registrieren' class='btn btn-lg btn-default'/>" +
             "<input id='loginButton' type='submit' value='Login' class='btn btn-lg btn-default' style='float: right'/>" +
             "</form>" +
             "</section>";
         $("main").append(loginScreen);
+    },
 
+    /**
+     * This function adds the Listener to the buttons
+     */
+    addButtonListeners: function () {
         $('body').on('click', '#registrierenButton', function (event) {
             event.preventDefault();
-            login.createUser();
+            login.createAndAppendRegistrationPopup();
         });
 
         $('body').on('click', '#loginButton', function (event) {
             event.preventDefault();
             login.loginCheck($("#benutzernameInput").val(), $("#passwortInput").val());
         });
-
-
-        //TODO if: (benutzernameInput.value.length>0  && passwortInput.value.length>0 ){activate login button}
-        {
-            $('body').on('change', '#benutzernameInput', function (event) {
-                event.preventDefault();
-            });
-
-            $('body').on('change', '#passwortInput', function (event) {
-                event.preventDefault();
-            });
-        }
     },
 
     /**
-     * This function opens the Popup to create new User
+     * This function creates and appends the Popup to create a new user
      */
-    createUser: function () {
+    createAndAppendRegistrationPopup: function () {
         var registerForm = "<header><h4  class='headerText'>Registrieren</h4></header>" +
             "<section  class='center loginSize'>" +
             "<form>" +
-            "<div class='input-group'>" +
+            "<section class='input-group'>" +
             "<p class='input-group-addon input-addon-login'>Benutzername:</p>" +
-            "<input class='form-control' id='benutzernameInput' type='text'>" +
-            "</div>" +
-            "<div class='input-group'>" +
+            "<input class='form-control' id='usernameInput' type='text'>" +
+            "</section>" +
+            "<section class='input-group'>" +
             "<p class='input-group-addon input-addon-login'>Passwort:</p>" +
-            "<input class='form-control' id='passwortInput' type='password'>" +
-            "</div>" +
-            "<div class='input-group'>" +
+            "<input class='form-control' id='passwordInput' type='password'>" +
+            "</section>" +
+            "<section class='input-group'>" +
             "<p class='input-group-addon input-addon-login'>Passwort wiederholen:</p>" +
-            "<input class='form-control' id='passwortInput' type='password'>" +
-            "</div>" +
-            "<input id='registrierungAbschickenButton' type='submit' value='Registrieren' class='btn btn-default'>" +
+            "<input class='form-control' id='password2Input' type='password'>" +
+            "</section>" +
+            "<input id='registrationSubmitButton' type='submit' value='Registrieren' class='btn btn-default'>" +
             "</form>" +
             "</section>";
-        var registrierenPopup = "<div id='createUserModal' class='modal'>" +
-            "<div class='modal-content'>" +
-            "<span id='closeModal'>x</span>" + registerForm + "</div>" +
-            "</div>";
-        $("main").append(registrierenPopup);
+        var registrationPopup = "<section id='createUserModal' class='modal'>" +
+            "<section class='modal-content'>" +
+            "<p id='closeModal'>x</p>" + registerForm + "</section>" +
+            "</section>";
+        $("main").append(registrationPopup);
 
-        //TODO: ajax um Benutzernamen bereits benutzt zu überprüfen?? (onChange)
-        //TODO: HTTP POST / ajax um den User in der db zu registrieren
-        //TODO: Passwörter sollen bei der Usererstellung gleich sein! -> function()
-        //TODO: onClick: "registrierungAbschickenButton" ausgefüllter name/pw gleich beim Anmelden eingeben?
-
+        $('body').on('click', '#registrationSubmitButton', function (event) {
+            event.preventDefault();
+            login.createUser($("#usernameInput").val(), $("#passwordInput").val(), $("#password2Input").val());
+        });
         var modal = document.getElementById('createUserModal');
         var span = document.getElementById("closeModal");
 
         modal.style.display = "block";
 
-        // When the user clicks on <span> (x), close the modal
+        // When the user clicks on x, close the modal
         span.onclick = function () {
             event.preventDefault();
             modal.style.display = "none";
@@ -130,22 +181,59 @@ var login = {
     },
 
     /**
+     * This function sends a POST with ajax to create a user
+     */
+    //TODO: HTTP POST / ajax um den User in der db zu registrieren
+    createUser: function (username, password, password2) {
+        if (password === password2) {
+            $.ajax({
+                url: "api/register",
+                data: {},
+                dataType: "json",
+                success: function (data) {
+                    //TODO register!
+                },
+                error: function () {
+                    //TODO
+                }
+            });
+        } else {
+            //TODO
+        }
+
+    },
+
+    /**
      * This function logs the user in
      */
     loginCheck: function (benutzername, passwort) {
         //TODO: database check user&&pw
+
         var successful = true;
         if (benutzername === "false") {
             successful = false;
         }
 
         if (successful) {
-            main.openMainscreen(); //TODO: login data as parameter? (load config => how?)
+            openMainScreen();
         } else {
             login.loginFailed();
         }
     },
+
+    /**
+     * This function gets called if the login failed
+     */
     loginFailed: function () {
+        $(".alert").remove();
+        $("main").append("<h4 class='alert alert-danger' role='alert'>Wrong Login Data!</h4>");
+    },
+
+    /**
+     * This function gets called if the registration failed
+     */
+    //TODO: USE IT
+    registrationFailed: function () {
         $(".alert").remove();
         $("main").append("<h4 class='alert alert-danger' role='alert'>Wrong Login Data!</h4>");
     }
@@ -156,10 +244,9 @@ var login = {
  */
 var main = {
     /**
-     * This function opens the Mainscreen
+     * Creates the main screen and appends it to the main
      */
-    openMainscreen: function () {
-        eraseScreen();
+    createAndAppendMainView: function () {
         var mainscreen = "<header><h1 class='headerText'>GEO GAME</h1></header>" +
             "<section class='centerButtons'>" +
             "<button id='newGameButton' class='button btn btn-default'>Play!</button><br/>" +
@@ -169,30 +256,32 @@ var main = {
             "<button id='logoutButton' class='button btn btn-default'>Logout</button><br/>" +
             "</section>";
         $("main").append(mainscreen);
+    },
 
+    addButtonListeners: function () {
         $('body').on('click', '#newGameButton', function (event) {
             event.preventDefault();
-            game.openGamescreen();
+            openGameScreen();
         });
 
         $('body').on('click', '#highscoreButton', function (event) {
             event.preventDefault();
-            highscore.openHighscorescreen();
+            openHighscoreScreen();
         });
 
         $('body').on('click', '#configButton', function (event) {
             event.preventDefault();
-            config.openConfigscreen();
+            openConfigScreen();
         });
 
         $('body').on('click', '#aboutButton', function (event) {
             event.preventDefault();
-            about.openAboutscreen();
+            openAboutScreen();
         });
 
         $('body').on('click', '#logoutButton', function (event) {
             event.preventDefault();
-            login.openLoginScreen();
+            openLoginScreen();
             //TODO different logout needed?
         });
     }
@@ -203,42 +292,52 @@ var main = {
  */
 var game = {
     /**
-     * This function opens the gamescreen
+     * Creates the Mainstructure for the Gameview  and appends it to the main
      */
-    openGamescreen: function () {
-        eraseScreen();
-
+    createAndAppendGameView: function () {
         var gameScreen = "<header><h3 class='headerText'>Go to the place on this Picture" +
             "<button id='zurueckButtonG' class='menubtn btn btn-default'>Menu</button></h3></header>" +
-            "<section>" +
-            "<div id='myCarousel' class='carousel slide' data-ride='carousel'></div>" +
-            "<div class='menu'></div>" +
-            "</section>";
+            "<p>" +
+            "<section id='myCarousel' class='carousel slide' data-ride='carousel'></section>" +
+            "<p class='menu'></p>" +
+            "</p>";
+        $("main").append(gameScreen);
+    },
 
+    /**
+     * Creates the Carosuel node for the Gameview and appends it to the Mainstructure
+     */
+    createAndAppendCarouselNode: function () {
         var carouselNode = "" +
-            "<ol class='carousel-indicators'>" +
+            "<p class='carousel-indicators'>" +
             "<!-- Indicators! -->" +
-            "</ol>" +
+            "</p>" +
 
             "<!-- Wrapper for slides -->" +
-            "<div class='carousel-inner' role='listbox'>" +
+            "<section class='carousel-inner' role='listbox'>" +
             "<!--Pictures! -->" +
-            "</div>" +
+            "</section>" +
 
             "<!-- Left and right controls -->" +
             "<a class='left carousel-control' href='#myCarousel' role='button' data-slide='prev'>" +
-            "<span class='glyphicon glyphicon-chevron-left' aria-hidden='true'></span>" +
-            "<span class='sr-only'>Previous</span>" +
+            "<p class='glyphicon glyphicon-chevron-left' aria-hidden='true'></p>" +
+            "<p class='sr-only'>Previous</p>" +
             "</a>" +
             "<a class='right carousel-control' href='#myCarousel' role='button' data-slide='next'>" +
-            "<span class='glyphicon glyphicon-chevron-right' aria-hidden='true'></span>" +
-            "<span class='sr-only'>Next</span>" +
+            "<p class='glyphicon glyphicon-chevron-right' aria-hidden='true'></p>" +
+            "<p class='sr-only'>Next</p>" +
             "</a>";
+        $("#myCarousel").append(carouselNode);
+    },
 
+    /**
+     * Creates the Picture and indicator nodes and appends them into the Carousel
+     */
+    appendPictureAndIndicatorNodesInCarousel: function (pictures) {
         var pictureNodes = "";
         var indicatorNodes = "";
 
-        //TODO: This should use "loadPictures()" and get the pictures on the right way!
+        //TODO: This should use "pictures" from "loadPictures()" and get the pictures on the right way!
         for (var i = 1; i <= 10; i++) {
             var number;
             if (i < 10) {
@@ -249,35 +348,43 @@ var game = {
                 console.error("Cannot proceed more than 99 Pictures!");
             }
 
-            //TODO: http://www.w3schools.com/bootstrap/bootstrap_carousel.asp
-            //TODO: Indicator (circle at the bottom) doesnt work
+            // http://www.w3schools.com/bootstrap/bootstrap_carousel.asp
+            //TODO: work here with the "pictures" array!
             if (i === 1) {
-                pictureNodes += "<div class='item item-active active'>" +
+                console.log("called i === 1");
+                pictureNodes += "<p class='item item-active active'>" +
                     "<img src='Assets/Pictures/GeoGame_Picture_" + number + ".jpg' alt='Picture'>" +
-                    "</div>";
-                indicatorNodes += "<li data-target='#myCarousel' data-slide-to='" + (i-1) + "' class='active'></li>";
+                    "</p>";
+                indicatorNodes += "<li data-target='#myCarousel' data-slide-to='" + (i - 1) + "' class='active'></li>";
             } else {
-                pictureNodes += "<div class='item'>" +
+                console.log("called else");
+                pictureNodes += "<p class='item'>" +
                     "<img src='Assets/Pictures/GeoGame_Picture_" + number + ".jpg' alt='Picture'>" +
-                    "</div>";
+                    "</p>";
                 indicatorNodes += "<li data-target='#myCarousel' data-slide-to='" + (i - 1) + "'></li>";
 
             }
-
         }
-        var points = 666;//game.getPointsOfActualGame();
-        var menuNode = "<input id='checkLocationButton' type='submit' value='Check Location' class='btn btn-lg btn-default'/>" +
-            "<h3>Points: " + points + "</h3>" +
-            "<input id='giveAHint' type='submit' value='Give me a hint' class='btn btn btn-default'/><br/>" +
-            "<input id='skipPicture' type='submit' value='Skip Picture' class='btn btn btn-default'/>";
-
-
-        $("main").append(gameScreen);
-        $(".carousel").append(carouselNode);
         $(".carousel-inner").append(pictureNodes);
         $(".carousel-indicators").append(indicatorNodes);
+    },
+
+    /**
+     * Creates the Menu node for the game view and appends it to the Mainstructure
+     */
+    createMenuNode: function (actualPoints) {
+        var menuNode = "<input id='checkLocationButton' type='submit' value='Check Location' class='btn btn-lg btn-default'/>" +
+            "<h3>Points: " + actualPoints + "</h3>" +
+            "<input id='giveAHint' type='submit' value='Give me a hint' class='btn btn btn-default'/><br/>" +
+            "<input id='skipPicture' type='submit' value='Skip Picture' class='btn btn btn-default'/>";
         $(".menu").append(menuNode);
 
+    },
+
+    /**
+     * This function adds the Listener to the buttons
+     */
+    addButtonListeners: function () {
         $('body').on('click', '#checkLocationButton', function (event) {
             event.preventDefault();
             game.checkLocation();
@@ -295,7 +402,7 @@ var game = {
 
         $('body').on('click', '#zurueckButtonG', function (event) {
             event.preventDefault();
-            main.openMainscreen();
+            openMainScreen();
         });
     },
 
@@ -317,10 +424,11 @@ var game = {
     },
 
     //TODO: IMPLEMENT "getPointsOfActualGame"
-    getPointsOfactualGame: function () {
+    getPointsOfActualGame: function () {
+        return 666;
     },
 
-    //TODO: IMPLEMENT "loadPictures"
+    //TODO: IMPLEMENT "checkLocation"
     checkLocation: function () {
     }
 }
@@ -330,45 +438,54 @@ var game = {
  */
 var highscore = {
     /**
-     * This function opens the highscore screen
+     * Creates the Highscore view for and appends it to the main
      */
-    openHighscorescreen: function () {
-        eraseScreen();
-        var highscoreData = highscore.loadHighscores();
+    openAndCreateHighscoreView: function () {
         var highscorescreen = "<header><h3 class='headerText'>Highscore</h3></header>" +
             "<section class='contentSize'>" +
                 //Two hours for this stupid, stupidly awesome looking Table LOL
             "<table class='center table-responsive panel panel-primary'>" +
-            "<thead class='panel-heading'><tr><th>Platz</th><th>Name</th><th class='bigTd'>Datum</th><th class='bigTd'>Punkte</th></tr></thead>" +
-            "<tbody class='panel-body'>" +
-            "<tr><td>1</td><td>Simon</td><td class='bigTd'>29.05.2016</td><td class='bigTd'>66666</td></tr>" +
-            "<tr><td>2</td><td>Dominic</td><td class='bigTd'>28.05.2016</td class='bigTd'><td>6666</td></tr>" +
-            "<tr><td>3</td><td>Nicolas</td><td class='bigTd'>27.05.2016</td class='bigTd'><td>666</td></tr>" +
-            "<tr><td>4</td><td>Nicolas</td><td class='bigTd'>27.05.2016</td class='bigTd'><td>66</td></tr>" +
-            "<tr><td>5</td><td>Nicolas</td><td class='bigTd'>27.05.2016</td class='bigTd'><td>6</td></tr>" +
-            "<tr><td>6</td><td>Nicolas</td><td class='bigTd'>27.05.2016</td class='bigTd'><td>0.6</td></tr>" +
-            "<tr><td>7</td><td>Nicolas</td><td class='bigTd'>27.05.2016</td class='bigTd'><td>0.06</td></tr>" +
-            "<tr><td>8</td><td>Nicolas</td><td class='bigTd'>27.05.2016</td class='bigTd'><td>0.006</td></tr>" +
-            "<tr><td>9</td><td>Nicolas</td><td class='bigTd'>27.05.2016</td class='bigTd'><td>0.0006</td></tr>" +
-            "<tr><td>10</td><td>Nicolas</td><td class='bigTd'>27.05.2016</td class='bigTd'><td>0.00006</td></tr>" +
-            "</tbody>" +
+            "<thead class='panel-heading'><tr><th>Platz</th><th>Name</th><th class='bigTd'>Punkte</th></tr></thead>" +
+            "<tbody class='panel-body'></tbody>" +
             "</table>" +
-            "<br/><div class='buttonContainer'>" +
+            "<br/><p class='buttonContainer'>" +
             "<button id='zurueckButtonH' class='button btn btn-default'>Zurück</button>" +
-            "</div></section>";
+            "</p></section>";
         $("main").append(highscorescreen);
-        //TODO: make a foreach which appends the rows
-
-
-        $('body').on('click', '#zurueckButtonH', function (event) {
-            event.preventDefault();
-            main.openMainscreen();
-        });
-
     },
 
+    /**
+     * This function loads the highscores and appends them to the table
+     */
     loadHighscores: function () {
-        //TODO: load ALLLLL the highsocredata
+        $("tr.content").remove();
+        var i = 1;
+        $.ajax({
+            url: "api/highscore",
+            data: {},
+            dataType: "json",
+            success: function (data) {
+                console.log(data);
+                $.each(data, function () {
+                    var $row = $("<tr class='content'><td>" + i + "</td><td>" + data[i - 1]['name'] + "</td><td class='bigTd'>" + data[i - 1]['score'] + "</td></tr>");
+                    $(".panel-body").append($row);
+                    i++;
+                });
+            },
+            error: function () {
+                $(".panel-body tr").remove();
+            }
+        });
+    },
+
+    /**
+     * This function adds the Listener to the buttons
+     */
+    addButtonListeners: function () {
+        $('body').on('click', '#zurueckButtonH', function (event) {
+            event.preventDefault();
+            openMainScreen();
+        });
     }
 }
 
@@ -377,36 +494,39 @@ var highscore = {
  */
 var config = {
     /**
-     * This function opens the config screen
+     * Creates the config view  and appends it to the main
      */
-    openConfigscreen: function () {
-        eraseScreen();
+    createAndAppendConfigView: function () {
         var configscreen = "<header><h3 class='headerText'>Config</h3></header>" +
             "<section class='contentSize'>" +
             "<form>" +
-            "<div class='center input-group input-config'>" +
+            "<section class='center input-group input-config'>" +
             "<p class='input-group-addon input-addon-login2'>Schwierigkeit: </p>" +
             "<select id='difficulty' class='form-control'>" +
             "<option value='easy'>Leicht</option>" +
             "<option value='middle'>Mittel</option>" +
             "<option value='difficult'>Schwer</option>" +
             "</select> " +
-            "</div>" +
-            "<div class='center panel panel-default'>" +
-            "<p class='panel-heading'>" +
+            "</section>" +
+            "<section class='center panel panel-default'>" +
+            "<section class='panel-heading'>" +
             "<label for='range'>Reichweite:</label>" +
             "<input type='text' id='range' readonly >" +
-            "</p>" +
-            "<div class='panel-body'><div id='slider-range'></div></div>" +
-            "</div></form>" +
-            "<br/><div class='buttonContainer'>" +
+            "</section>" +
+            "<section class='panel-body'><p id='slider-range'></p></p>" +
+            "</section></form>" +
+            "<p class='buttonContainer'>" +
             "<button id='saveConfigButton' class='button btn btn-default'>Speichern</button><br/>" +
             "<button id='zurueckButtonC' class='button btn btn-default'>Zurück</button>" +
-            "</div></section>";
+            "</p></section>";
         $("main").append(configscreen);
+    },
+
+    /**
+     * Intializes the settings which are stored in this js
+     */
+    intializeSettings: function () {
         $("select").val(difficulty);
-
-
         var newRange = [range[0], range[1]];
         var newDifficulty = difficulty;
 
@@ -429,7 +549,6 @@ var config = {
         $("#range").val($("#slider-range").slider("values", 0) +
             "km - " + $("#slider-range").slider("values", 1) + "km");
 
-
         $('select').on('change', function () {
             newDifficulty = this.value;
         });
@@ -438,12 +557,8 @@ var config = {
             event.preventDefault();
             config.saveConfig(newRange, newDifficulty);
         });
-
-        $('body').on('click', '#zurueckButtonC', function (event) {
-            event.preventDefault();
-            main.openMainscreen();
-        });
     },
+
     /**
      * This function saves the configuration
      */
@@ -451,6 +566,16 @@ var config = {
         //TODO: Save configuration
         range = newRange;
         difficulty = newDifficulty;
+    },
+
+    /**
+     * This function adds the Listener to the button
+     */
+    addButtonListeners: function () {
+        $('body').on('click', '#zurueckButtonC', function (event) {
+            event.preventDefault();
+            openMainScreen();
+        });
     }
 }
 /**
@@ -458,27 +583,52 @@ var config = {
  */
 var about = {
     /**
-     * This function opens the about screen
+     * Creates the about view and appends it to the main
      */
-    openAboutscreen: function () {
-        eraseScreen();
+    createAndAppendAboutView: function () {
         var aboutScreen = "<header><h3 class='headerText'>About us</h3></header>" +
             "<section style='width: 90%; margin: auto;'>" +
             "<p>Dies ist eine Single Page App, erstellt im Rahmen des Erfahrungsnotenprojektes des Moduls webeC (Web Engineering) and der FHNW in Brugg.</p>" +
             "<p>Developer: </p>" +
             "<ul><li>Simon Rissi</li><li>Dominic Bär</li><li>Nicolas Novak</li></ul>" +
-            "<br/><div class='buttonContainer'>" +
+            "<br/><p class='buttonContainer'>" +
             "<button id='zurueckButtonA' class='button btn btn-default'>Zurück</button>" +
-            "</div></section>";
+            "</p></section>";
         $("main").append(aboutScreen);
+    },
 
+    /**
+     * This function adds the Listener to the Button
+     */
+    addButtonListeners: function () {
         $('body').on('click', '#zurueckButtonA', function (event) {
             event.preventDefault();
-            main.openMainscreen();
+            openMainScreen();
         });
     }
 }
 
+
+////////////////////////////////////////////////////////////
+// Here the functions used by several screens get defined //
+////////////////////////////////////////////////////////////
+
+/**
+ * Empties the main element
+ */
 function eraseScreen() {
     $("main").empty();
+}
+
+/*
+ * This creates, once and for all, all the listeners
+ * Like this, we can prevent adding the same listener multiple times to an element
+ */
+function addListeners(){
+    login.addButtonListeners();
+    game.addButtonListeners();
+    main.addButtonListeners();
+    highscore.addButtonListeners();
+    config.addButtonListeners();
+    about.addButtonListeners();
 }
