@@ -121,24 +121,70 @@
 	});
 	
 	$app->post('/register', function() use ($app) {
-		$json = $app->request->getBody();
+		$request = json_decode($app->request->getBody(),true);
 		
-		echo $json;
+		$db = getDBConnection('mysql:host='.HOST.';dbname='.DBNAME, USER, PWD);
+		
+		$selection = $db->prepare('SELECT * FROM user WHERE Name = \''.$request['name'].'\'');
+		$success = $selection->execute();
+		$users = $selection->fetchAll(PDO::FETCH_ASSOC);
+		
+		if(sizeof($users) > 0) {
+			$errorjson = array();
+			$errorjson["message"] = "User ".$users[0]['Name']." besteht bereits.";
+			echo json_encode($errorjson);
+		} else {
+			//create user
+			//return user with current token
+			$insertion = $db->prepare('INSERT INTO user (Name, Password, CurrentToken) VALUES (:name, :password, :currenttoken)');
+			$insertion->bindParam(':name', $name);
+			$insertion->bindParam(':password', $password);
+			$insertion->bindParam(':currenttoken', $currenttoken);
+			$name = $request["name"];
+			$password = $request["password"];
+			$currenttoken = createToken();
+			
+			$success = $insertion->execute();
+			
+			if($success) {
+				$returnjson = array();
+				$returnjson["name"] = $name;
+				$returnjson["currenttoken"] = $currenttoken;
+				echo json_encode($returnjson);
+			} else {
+				$errorjson = array();
+				$errorjson["message"] = "User $name konnte nicht erstellt werden.";
+				echo json_encode($errorjson);
+			}
+		}
 	});
 	
+	function createToken() {
+		return "kajcqkejcr134cqkda";
+	}
+	
 	$app->post('/verifylocation', function() use ($app) {
+		//TODO: Login
+		
+		
 		$json = $app->request->getBody();
 		
 		echo $json;
 	});
 	
 	$app->post('/skippicture', function() use ($app) {
+		//TODO: Login
+		
+		
 		$json = $app->request->getBody();
 		
 		echo $json;
 	});
 	
 	$app->post('/usehint', function() use ($app) {
+		//TODO: Login
+		
+		
 		$json = $app->request->getBody();
 		
 		echo $json;
