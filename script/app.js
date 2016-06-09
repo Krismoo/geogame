@@ -127,13 +127,3 @@ function removeErrorMessages() {
     $(".alert").remove();
 }
 
-/**
- * disables / enables a certain button on the recognition whether a value is bigger than zero or not
- */
-function toggleButton(button, value, value2) {
-    if (String(value).length > 0 && String(value2).length > 0) { //works until here!
-        button.prop('disabled', false);
-    } else {
-        button.prop('disabled', true);
-    }
-}

@@ -55,34 +55,17 @@ var game = {
 
         //TODO: This should use "pictures" from "loadPictures()" and get the pictures on the right way!
         for (var i = 1; i <= 10; i++) {
-            var number;
-            if (i < 10) {
-                number = "00" + i;
-            } else if (i < 100) {
-                number = "0" + i;
-            } else {
-                console.error("Cannot proceed more than 99 Pictures!");
-            }
-
+            var number = giveNumberString(i);
             // http://www.w3schools.com/bootstrap/bootstrap_carousel.asp
-            //work here with the "pictures" array!
-            if (i === 1) {
-                console.log("called i === 1");
-                pictureNodes += "<p class='item item-active active'>" +
-                    "<img src='Assets/Pictures/GeoGame_Picture_" + number + ".jpg' alt='Picture'>" +
-                    "</p>";
-                indicatorNodes += "<li data-target='#myCarousel' data-slide-to='" + (i - 1) + "' class='active'></li>";
-            } else {
-                console.log("called else");
-                pictureNodes += "<p class='item'>" +
-                    "<img src='Assets/Pictures/GeoGame_Picture_" + number + ".jpg' alt='Picture'>" +
-                    "</p>";
-                indicatorNodes += "<li data-target='#myCarousel' data-slide-to='" + (i - 1) + "'></li>";
-
-            }
+            //TODO  here with the "pictures" array!
+            pictureNodes += addPictureNode(number);
+            indicatorNodes += addIndicatorNode(i);
         }
         $(".carousel-inner").append(pictureNodes);
         $(".carousel-indicators").append(indicatorNodes);
+        $("p.item").first().addClass("active item-active");
+        $("li").first().addClass("active");
+
     },
 
     /**
@@ -124,14 +107,14 @@ var game = {
 
     //TODO: IMPLEMENT "loadPictures"
     loadPictures: function (user) {
-        var answer = sendGet("pictures", user);
+        var answer = sendAjaxCall("pictures", user);
         return answer;
     },
 
     //TODO: IMPLEMENT "giveAHint"
     giveAHint: function (request) {
         //load here hint!
-        var hint = sendGet("usehint", request);
+        var hint = sendAjaxCall("usehint", request);
         // var hint = "ich bin ein unbrauchbarer Hinweis!";
         //take away some points! (or db??)
         alert(hint);
@@ -139,41 +122,44 @@ var game = {
 
     //TODO: IMPLEMENT "skipPicture"
     skipPicture: function (request) {
-        var answer = sendGet("skippicture", request);
+        var answer = sendAjaxCall("skippicture", request);
         return answer;
     },
 
     //TODO: IMPLEMENT "getPointsOfActualGame" in db!!
     getPointsOfActualGame: function (request) {
-        var answer = sendGet("pictures", request);
+        var answer = sendAjaxCall("pictures", request);
+        if (answer === undefined) {
+            return "666";
+        }
         return answer;
     },
 
     //TODO: IMPLEMENT "checkLocation"
     checkLocation: function (positionRequest) {
-        var answer = sendGet("verifylocation", positionRequest);
+        var answer = sendAjaxCall("verifylocation", positionRequest);
         return answer;
     }
 };
 
 /**
  * This function proceeds all the GET ajax calls
- * @param url       the url where the request gets sended to
+ * @param url       the url where the request gets sent to
  * @param request   the data to send
  */
-function sendGet(url, request) {
+function sendAjaxCall(url, request) {
     $.ajax({
         url: "api/" + url,
         data: request,
         dataType: "json",
-        success: function (response) {
-            console.log("ajax giveAHint success");
-            if (response['message'] !== null) {
+        success: function (answer) {
+            console.log("ajax GET success");
+            if (answer['message'] !== null) {
                 //TODO where to append? :(
-                createAndAppendErrorMessage($("main"), response['message']);
+                createAndAppendErrorMessage($("main"), answer['message']);
                 return null;
             } else {
-                return response;
+                return answer;
             }
         },
         error: function () {
@@ -181,4 +167,35 @@ function sendGet(url, request) {
             return null;
         }
     });
+}
+
+/**
+ * TODO comment
+ * @param number
+ * @returns {string}
+ */
+function addPictureNode(number) {
+
+    return "<p class='item'>" +
+        "<img src='Assets/Pictures/GeoGame_Picture_" + number + ".jpg' alt='Picture'>" +
+        "</p>";
+}
+/**
+ * TODO comment
+ * @param number
+ * @returns {string}
+ */
+function addIndicatorNode(i) {
+    return "<li data-target='#myCarousel' data-slide-to='" + (i - 1) + "'></li>";
+}
+
+function giveNumberString(i) {
+    if (i < 10) {
+        return "00" + i;
+    } else if (i < 100) {
+        return "0" + i;
+    } else {
+        console.error("Cannot proceed more than 99 Pictures!");
+        return null;
+    }
 }

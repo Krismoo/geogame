@@ -15,11 +15,11 @@ var login = {
             "<form>" +
             "<section class='input-group input-group-lg'>" +
             "<h4  class='input-group-addon input-addon-login'>Benutzername: </h4>" +
-            "<input class='form-control' id='usernameInput' placeholder='Username' type='text'/></br>" +
+            "<input class='form-control' id='usernameInput' onkeyup='userInputKeyUp()' placeholder='Username' type='text'/></br>" +
             "</section>" +
             "<section class='input-group input-group-lg'>" +
             "<h4  class='input-group-addon input-addon-login'>Passwort: </h4>" +
-            "<input class='form-control' id='passwordInput' placeholder='Password' type='password'/></br>" +
+            "<input class='form-control' id='passwordInput' onkeyup='userInputKeyUp()' placeholder='Password' type='password'/></br>" +
             "</section>" +
             "<input id='registerButton' type='submit' value='Register' class='btn btn-lg btn-default'/>" +
             "<input id='loginButton' type='submit' value='Login' class='btn btn-lg btn-default' disabled/>" +
@@ -56,23 +56,11 @@ var login = {
 
         body.on('click', '#registrationSubmitButton', function (event) {
             event.preventDefault();
-            login.createUser($("#newUsernameInput").val(), $("#newPasswordInput").val(), $("#newPassword2Input").val());
-        });
-
-        //TODO wird erst gefeuert, wenn man irgendwo hinklickt
-        body.on('change', '#newUsernameInput', function () {
-            console.log("log: " + $("#newUsernameInput").val());
-            toggleButton($("#registrationSubmitButton"), $("#newUsernameInput").val(),1);
-        });
-
-        body.on('change', '#usernameInput', function () {
-            console.log("log: " + $("#usernameInput").val());
-            toggleButton($("#loginButton"), $("#usernameInput").val(), $("#passwordInput").val());
-        });
-
-        body.on('change', '#passwordInput', function () {
-            console.log("log: " + $("#passwordInput").val());
-            toggleButton($("#loginButton"), $("#passwordInput").val(), $("#passwordInput").val());
+            if ($("#newPasswordInput").val() === $("#newPassword2Input").val()) {
+                login.createUser($("#newUsernameInput").val(), $("#newPasswordInput").val());
+            } else {
+                createAndAppendErrorMessage($("section.modal-content"), "Passwörter stimmen nicht überein!");
+            }
         });
     },
 
@@ -85,15 +73,15 @@ var login = {
             "<form>" +
             "<section class='input-group'>" +
             "<p class='input-group-addon input-addon-login'>Benutzername:</p>" +
-            "<input class='form-control' id='newUsernameInput' type='text'>" +
+            "<input class='form-control' onkeyup='newUserInputKeyUp()' id='newUsernameInput' type='text'>" +
             "</section>" +
             "<section class='input-group'>" +
             "<p class='input-group-addon input-addon-login'>Passwort:</p>" +
-            "<input class='form-control' id='newPasswordInput' type='password'>" +
+            "<input class='form-control' onkeyup='newUserInputKeyUp()' id='newPasswordInput' type='password'>" +
             "</section>" +
             "<section class='input-group'>" +
             "<p class='input-group-addon input-addon-login'>Passwort wiederholen:</p>" +
-            "<input class='form-control' id='newPassword2Input' type='password'>" +
+            "<input class='form-control' onkeyup='newUserInputKeyUp()' id='newPassword2Input' type='password'>" +
             "</section>" +
             "<input id='registrationSubmitButton' type='submit' value='Register' class='btn btn-default' disabled>" +
             "</form>" +
@@ -109,34 +97,17 @@ var login = {
     /**
      * This function sends a POST with ajax to create a user
      */
-    createUser: function (username, password, password2) {
+    createUser: function (username, password) {
         removeErrorMessages();
-        if (password.length > 0 && (password === password2)) {
-            $.ajax({
-                url: "api/register",
-                data: {
-                    name: username,
-                    password: password
-                },
-                dataType: "json",
-                type: "POST",
-                success: function (response) {
-                    console.log("ajax createUser POST success");
-                    console.log(response);
-                    if (response['message'] !== null) {
-                        createAndAppendErrorMessage($("section.modal-content"), response['message']);
-                    } else {
-                        $("#usernameInput").val(response["name"]);
-                        $("#passwordInput").val(response["password"]);
-                        $("#createUserModal").hide();
-                    }
-                },
-                error: function () {
-                    createAndAppendErrorMessage($("section.modal-content"), "Verbindung unterbrochen!");
-                }
-            });
-        } else {
-            createAndAppendErrorMessage($("section.modal-content"), "Überprüfe Dein Passwort!");
+        var request = {
+            name: username,
+            password: password
+        };
+        var answer = sendAjaxCall("register", request, "POST", $("section.modal-content"));
+        if (answer !== null) {
+            // TODO: Does not reach ?!
+            $("#usernameInput").val(answer["name"]);
+            $("#createUserModal").hide();
         }
     },
 
@@ -144,9 +115,7 @@ var login = {
      * This function logs the user in
      */
     loginCheck: function (username, password) {
-        //TODO: database check user&&pw
-
-        //TEST
+        //TODO: TEST
         if (username === 't') {
             openMainScreen();
             return;
@@ -155,21 +124,78 @@ var login = {
         var request = new Array(2);
         request["name"] = username;
         request["password"] = password;
-        $.ajax({
-            url: "api/login",
-            data: JSON.stringify(request),
-            dataType: "json",
-            success: function ($request) {
-                console.log("ajax loginCheck get success");
-                if (response === true) {
-                    openLoginScreen();
-                } else {
-                    createAndAppendErrorMessage($("main"), response['message']);
-                }
-            },
-            error: function () {
-                createAndAppendErrorMessage($("main"), "Verbindung unterbrochen!");
-            }
-        });
+        var answer = sendAjaxCall("login", JSON.stringify(request), "GET", $("main"));
+        if (answer === true) {
+            openLoginScreen();
+        }
     }
 };
+
+///////////////////////////////////////////////////////////////////////////////////
+// Here the functions used by several (other) functions of this file get defined //
+///////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * gets called when a key is pressed in the newUsername input, toggles the button
+ */
+function newUserInputKeyUp() {
+    var regB = $("#registrationSubmitButton");
+    var nUInpVal = $("#newUsernameInput").val();
+    var nPWInVal = $("#newPasswordInput").val();
+    var nPWIn2Val = $("#newPassword2Input").val();
+    toggleButton(regB, [nUInpVal, nPWInVal, nPWIn2Val]);
+}
+
+/**
+ * gets called when a key is pressed in the username / password input, toggles the button
+ */
+function userInputKeyUp() {
+    var logInB = $("#loginButton");
+    var uInpVal = $("#usernameInput").val();
+    var pwInVal = $("#passwordInput").val();
+    toggleButton(logInB, [uInpVal, pwInVal]);
+}
+
+/**
+ * disables / enables a certain button on the recognition whether a value is bigger than zero or not
+ */
+function toggleButton(button, value) {
+    var i = 0;
+    while (i < value.length && String(value[i]).length > 0) {
+        i++;
+    }
+    if (i === value.length) {
+        button.prop('disabled', false);
+    } else {
+        button.prop('disabled', true);
+    }
+}
+
+/**
+ *  sends an ajax call
+ * @param url       the url where the request gets sent to
+ * @param request   the data to send
+ * @param type      type of the ajax e.g. GET or POST
+ * @param context   the context of the call, say where to append error messages
+ */
+function sendAjaxCall(url, request, type, context) {
+    $.ajax({
+        url: "api/" + url,
+        data: JSON.stringify(request),
+        dataType: "json",
+        type: type,
+        success: function (answer) {
+            console.log("ajax " + type + " success");
+            if (answer["message"] !== undefined) {
+                createAndAppendErrorMessage(context, answer['message']);
+                return null;
+            } else {
+                return answer;
+            }
+        },
+        error: function () {
+            createAndAppendErrorMessage($("main"), "Verbindung unterbrochen!");
+            return null;
+        }
+    });
+}
