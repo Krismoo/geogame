@@ -45,9 +45,13 @@ function openGameScreen() {
     game.createAndAppendGameView();
     game.createAndAppendCarouselNode();
     var loadedPictures = game.loadPictures();
-    game.appendPictureAndIndicatorNodesInCarousel(loadedPictures);
     var actualPoints = game.getPointsOfActualGame();
-    var menuNode = game.createMenuNode(actualPoints);
+    if (loadedPictures !== null && actualPoints !== null) {
+        game.appendPictureAndIndicatorNodesInCarousel(loadedPictures);
+        game.createMenuNode(actualPoints);
+    } else {
+
+    }
 }
 
 /**
@@ -100,15 +104,15 @@ var login = {
             "<section class='loginSize panel panel-default panel-body'>" +
             "<form>" +
             "<section class='input-group input-group-lg'>" +
-            "<h4  class='input-group-addon input-addon-login'>Username: </h4>" +
+            "<h4  class='input-group-addon input-addon-login'>Benutzername: </h4>" +
             "<input class='form-control' id='usernameInput' placeholder='Username' type='text'/></br>" +
             "</section>" +
             "<section class='input-group input-group-lg'>" +
-            "<h4  class='input-group-addon input-addon-login'>Password: </h4>" +
+            "<h4  class='input-group-addon input-addon-login'>Passwort: </h4>" +
             "<input class='form-control' id='passwordInput' placeholder='Password' type='password'/></br>" +
             "</section>" +
             "<input id='registerButton' type='submit' value='Register' class='btn btn-lg btn-default'/>" +
-            "<input id='loginButton' type='submit' value='Login' class='btn btn-lg btn-default' style='float: right'/>" +
+            "<input id='loginButton' type='submit' value='Login' class='btn btn-lg btn-default' disabled/>" +
             "</form>" +
             "</section>";
         $("main").append(loginScreen);
@@ -121,55 +125,66 @@ var login = {
         $('body').on('click', '#registerButton', function (event) {
             event.preventDefault();
             $("#createUserModal").show();
-
-          //  login.createAndAppendRegistrationPopup();
         });
 
         $('body').on('click', '#loginButton', function (event) {
             event.preventDefault();
             login.loginCheck($("#usernameInput").val(), $("#passwordInput").val());
         });
-        // TODO MODALALALAFOWWG%IO
+
         $('body').on('click', '#closeModal', function (event) {
             event.preventDefault();
             $("#createUserModal").hide();
         });
 
-
-        window.onclick = function(event) {
+        window.onclick = function (event) {
             if (event.target == $("#createUserModal")) {
                 $("#createUserModal").hide();
             }
         }
 
-        //TODO to listeners where it belongs!!
         $('body').on('click', '#registrationSubmitButton', function (event) {
             event.preventDefault();
             login.createUser($("#newUsernameInput").val(), $("#newPasswordInput").val(), $("#newPassword2Input").val());
+        });
+
+        //TODO wird erst gefeuert, wenn man irgendwo hinklickt
+        $('body').on('change', '#newUsernameInput', function () {
+            console.log("log: " + $("#newUsernameInput").val());
+            toggleButton($("#registrationSubmitButton"), $("#newUsernameInput").val(),1);
+        });
+
+        $('body').on('change', '#usernameInput', function () {
+            console.log("log: " + $("#usernameInput").val());
+            toggleButton($("#loginButton"), $("#usernameInput").val(), $("#passwordInput").val());
+        });
+
+        $('body').on('change', '#passwordInput', function () {
+            console.log("log: " + $("#passwordInput").val());
+            toggleButton($("#loginButton"), $("#passwordInput").val(), $("#passwordInput").val());
         });
     },
 
     /**
      * This function creates and appends the Popup to create a new user
      */
-    //TODO append YES but we cant see it!
     createAndAppendRegistrationPopup: function () {
         var registerForm = "<header><h4  class='headerText'>Register</h4></header>" +
             "<section  class='center loginSize'>" +
             "<form>" +
             "<section class='input-group'>" +
-            "<p class='input-group-addon input-addon-login'>Username:</p>" +
+            "<p class='input-group-addon input-addon-login'>Benutzername:</p>" +
             "<input class='form-control' id='newUsernameInput' type='text'>" +
             "</section>" +
             "<section class='input-group'>" +
-            "<p class='input-group-addon input-addon-login'>Password:</p>" +
+            "<p class='input-group-addon input-addon-login'>Passwort:</p>" +
             "<input class='form-control' id='newPasswordInput' type='password'>" +
             "</section>" +
             "<section class='input-group'>" +
-            "<p class='input-group-addon input-addon-login'>Password repeat:</p>" +
+            "<p class='input-group-addon input-addon-login'>Passwort wiederholen:</p>" +
             "<input class='form-control' id='newPassword2Input' type='password'>" +
             "</section>" +
-            "<input id='registrationSubmitButton' type='submit' value='Register' class='btn btn-default'>" +
+            "<input id='registrationSubmitButton' type='submit' value='Register' class='btn btn-default' disabled>" +
             "</form>" +
             "</section>";
 
@@ -183,17 +198,15 @@ var login = {
     /**
      * This function sends a POST with ajax to create a user
      */
-//TODO: HTTP POST / ajax um den User in der db zu registrieren
     createUser: function (username, password, password2) {
-        console.log(password + " : " + password2);
-        removeErrorMessage();
+        removeErrorMessages();
         if (password.length > 0 && (password === password2)) {
-            var request = Array(2);
-            request["name"] = username;
-            request["password"] = password;
             $.ajax({
                 url: "api/register",
-                data: request,
+                data: {
+                    name: username,
+                    password: password
+                },
                 dataType: "json",
                 type: "POST",
                 success: function (response) {
@@ -207,12 +220,12 @@ var login = {
                         $("#createUserModal").hide();
                     }
                 },
-                error: function (responseError) {
-                    createAndAppendErrorMessage($("section.modal-content"), responseError['message']);
+                error: function () {
+                    createAndAppendErrorMessage($("section.modal-content"), "Verbindung unterbrochen!");
                 }
             });
         } else {
-            createAndAppendErrorMessage($("section.modal-content"), "Check password!");
+            createAndAppendErrorMessage($("section.modal-content"), "Überprüfe Dein Passwort!");
         }
 
     }
@@ -224,16 +237,31 @@ var login = {
     loginCheck: function (username, password) {
         //TODO: database check user&&pw
 
-        var successful = true;
-        if (username === "false") {
-            successful = false;
+        //TEST
+        if (username === 't') {
+            openMainScreen();
+            return;
         }
 
-        if (successful) {
-            openMainScreen();
-        } else {
-            createAndAppendErrorMessage($("main"), "Wrong Login Data!");
-        }
+        var request = Array(2);
+        request["name"] = username;
+        request["password"] = password;
+        $.ajax({
+            url: "api/login",
+            data: JSON.stringify(request),
+            dataType: "json",
+            success: function ($request) {
+                console.log("ajax loginCheck get success");
+                if (response === true) {
+                    openLoginScreen();
+                } else {
+                    createAndAppendErrorMessage($("main"), response['message']);
+                }
+            },
+            error: function () {
+                createAndAppendErrorMessage($("main"), "Verbindung unterbrochen!");
+            }
+        });
     }
 }
 
@@ -280,7 +308,6 @@ var main = {
         $('body').on('click', '#logoutButton', function (event) {
             event.preventDefault();
             openLoginScreen();
-            //TODO different logout needed?
         });
     }
 }
@@ -347,7 +374,7 @@ var game = {
             }
 
             // http://www.w3schools.com/bootstrap/bootstrap_carousel.asp
-            //TODO: work here with the "pictures" array!
+            //work here with the "pictures" array!
             if (i === 1) {
                 console.log("called i === 1");
                 pictureNodes += "<p class='item item-active active'>" +
@@ -376,7 +403,6 @@ var game = {
             "<input id='giveAHint' type='submit' value='Give me a hint' class='btn btn btn-default'/><br/>" +
             "<input id='skipPicture' type='submit' value='Skip Picture' class='btn btn btn-default'/>";
         $(".menu").append(menuNode);
-
     },
 
     /**
@@ -405,29 +431,124 @@ var game = {
     },
 
     //TODO: IMPLEMENT "loadPictures"
-    loadPictures: function () {
+    loadPictures: function (user) {
+        $.ajax({
+            url: "api/pictures",
+            data: user,
+            dataType: "json",
+            success: function (response) {
+                console.log("ajax loadPictures success");
+                console.log(user);
+                if (response['message'] !== null) {
+                    //TODO where to append? :(
+                    createAndAppendErrorMessage($("main"), response['message']);
+                    return null;
+                } else {
+                    return response;
+                }
+            },
+            error: function () {
+                createAndAppendErrorMessage($("main"), "Verbindung unterbrochen!");
+                return null;
+            }
+        });
     },
 
     //TODO: IMPLEMENT "giveAHint"
-    giveAHint: function () {
-        var hint;
-        //TODO load here hint!
-        hint = "I am an useless hint!"
-        //TODO take away some points!
+    giveAHint: function (request) {
+        //load here hint!
+        $.ajax({
+            url: "api/usehint",
+            data: request,
+            dataType: "json",
+            success: function (response) {
+                console.log("ajax giveAHint success");
+                if (response['message'] !== null) {
+                    //TODO where to append? :(
+                    createAndAppendErrorMessage($("main"), response['message']);
+                    return null;
+                } else {
+                    return response;
+                }
+            },
+            error: function () {
+                createAndAppendErrorMessage($("main"), "Verbindung unterbrochen!");
+                return null;
+            }
+        });
+        var hint = "ich bin ein unbrauchbarer Hinweis!";
+        //take away some points! (or db??)
         alert(hint);
     },
 
     //TODO: IMPLEMENT "skipPicture"
-    skipPicture: function () {
+    skipPicture: function (request) {
+        $.ajax({
+            url: "api/skippicture",
+            data: request,
+            dataType: "json",
+            success: function (response) {
+                console.log("ajax skipPicture success");
+                if (response['message'] !== null) {
+                    //TODO where to append? :(
+                    createAndAppendErrorMessage($("main"), response['message']);
+                    return null;
+                } else {
+                    return response;
+                }
+            },
+            error: function () {
+                createAndAppendErrorMessage($("main"), "Verbindung unterbrochen!");
+                return null;
+            }
+        });
     },
 
-    //TODO: IMPLEMENT "getPointsOfActualGame"
-    getPointsOfActualGame: function () {
+    //TODO: IMPLEMENT "getPointsOfActualGame" in db!!
+    getPointsOfActualGame: function (request) {
         return 666;
+        $.ajax({
+            url: "api/pictures",
+            data: request,
+            dataType: "json",
+            success: function (response) {
+                console.log("ajax getPointsOfActualGame success");
+                if (response['message'] !== null) {
+                    //TODO where to append? :(
+                    createAndAppendErrorMessage($("main"), response['message']);
+                    return null;
+                } else {
+                    return response;
+                }
+            },
+            error: function () {
+                createAndAppendErrorMessage($("main"), "Verbindung unterbrochen!");
+                return null;
+            }
+        });
     },
 
     //TODO: IMPLEMENT "checkLocation"
-    checkLocation: function () {
+    checkLocation: function (positionRequest) {
+        $.ajax({
+            url: "api/verifylocation",
+            data: positionRequest,
+            dataType: "json",
+            success: function (response) {
+                console.log("ajax checkLocation success");
+                if (response['message'] !== null) {
+                    //TODO where to append? :(
+                    createAndAppendErrorMessage($("main"), response['message']);
+                    return null; //TODO needed?
+                } else {
+                    return response;
+                }
+            },
+            error: function () {
+                createAndAppendErrorMessage($("main"), "Verbindung unterbrochen!");
+                return null;
+            }
+        });
     }
 }
 
@@ -441,7 +562,6 @@ var highscore = {
     openAndCreateHighscoreView: function () {
         var highscorescreen = "<header><h3 class='headerText'>Highscore</h3></header>" +
             "<section class='contentSize'>" +
-                //Two hours for this stupid, stupidly awesome looking Table LOL
             "<table class='center table-responsive panel panel-primary'>" +
             "<thead class='panel-heading'><tr><th>Platz</th><th>Name</th><th class='bigTd'>Punkte</th></tr></thead>" +
             "<tbody class='panel-body'></tbody>" +
@@ -561,7 +681,6 @@ var config = {
      * This function saves the configuration
      */
     saveConfig: function (newRange, newDifficulty) {
-        //TODO: Save configuration
         range = newRange;
         difficulty = newDifficulty;
     },
@@ -585,7 +704,7 @@ var about = {
      */
     createAndAppendAboutView: function () {
         var aboutScreen = "<header><h3 class='headerText'>About us</h3></header>" +
-            "<section style='width: 90%; margin: auto;'>" +
+            "<section id='about'>" +
             "<p>Dies ist eine Single Page App, erstellt im Rahmen des Erfahrungsnotenprojektes des Moduls webeC (Web Engineering) and der FHNW in Brugg.</p>" +
             "<p>Developer: </p>" +
             "<ul><li>Simon Rissi</li><li>Dominic Bär</li><li>Nicolas Novak</li></ul>" +
@@ -634,15 +753,25 @@ function addListeners() {
 /**
  * creates and appends an error message to a node
  */
-//TODO: USE IT
 function createAndAppendErrorMessage(node, message) {
-    removeErrorMessage();
+    removeErrorMessages();
     node.append("<h4 class='alert alert-danger' role='alert'>" + message + "</h4>");
 }
 
 /**
  * removes all alerts
  */
-function removeErrorMessage() {
+function removeErrorMessages() {
     $(".alert").remove();
+}
+
+/**
+ * disables / enables a certain button on the recognition whether a value is bigger than zero or not
+ */
+function toggleButton(button, value, value2) {
+    if (String(value).length > 0 && String(value2).length > 0) { //works until here!
+        button.prop('disabled', false);
+    } else {
+        button.prop('disabled', true);
+    }
 }
