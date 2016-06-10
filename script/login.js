@@ -48,13 +48,6 @@ var login = {
             $("#createUserModal").hide();
         });
 
-        //TODO how can this has a complexity of 2??? => kills the mark by 2.5p
-        window.onclick = function (event) {
-            if (event.target === $("#createUserModal")) {
-                $("#createUserModal").hide();
-            }
-        };
-
         body.on('click', '#registrationSubmitButton', function (event) {
             event.preventDefault();
             if ($("#newPasswordInput").val() === $("#newPassword2Input").val()) {
