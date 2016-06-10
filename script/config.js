@@ -1,6 +1,9 @@
 /**
  * Created by Nicolas on 09.06.2016.
  */
+var range = [5, 15]; //default range beetween range[0] and range[1] (in km)
+var difficulty = "middle"; //TODO: difficulty still needs to be defined
+var MAX_RANGE = [1, 100];//this will be a range from 1km to >99km
 
 /**
  * This variable defines all the functions for the config screen

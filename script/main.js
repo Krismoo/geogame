@@ -21,6 +21,9 @@ var main = {
         $("main").append(mainscreen);
     },
 
+    /**
+     * This function adds the Listener to the buttons
+     */
     addButtonListeners: function () {
         $('body').on('click', '#newGameButton', function (event) {
             event.preventDefault();

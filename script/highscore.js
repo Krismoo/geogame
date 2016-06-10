@@ -33,9 +33,8 @@ var highscore = {
             data: {},
             dataType: "json",
             success: function (data) {
-                console.log(data);
                 $.each(data, function () {
-                    var $row = $("<tr class='content'><td>" + i + "</td><td>" + data[i - 1]['name'] + "</td><td class='bigTd'>" + data[i - 1]['score'] + "</td></tr>");
+                    var $row = $("<tr class='content'><td>" + i + "</td><td>" + data[i - 1].name + "</td><td class='bigTd'>" + data[i - 1].score + "</td></tr>");
                     $(".panel-body").append($row);
                     i++;
                 });

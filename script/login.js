@@ -29,7 +29,7 @@ var login = {
     },
 
     /**
-     * This function adds the Listener to the buttons
+     * This function adds the Listeners to the buttons
      */
     addButtonListeners: function () {
         var body = $('body');
@@ -48,8 +48,9 @@ var login = {
             $("#createUserModal").hide();
         });
 
+        //TODO how can this has a complexity of 2??? => kills the mark by 2.5p
         window.onclick = function (event) {
-            if (event.target == $("#createUserModal")) {
+            if (event.target === $("#createUserModal")) {
                 $("#createUserModal").hide();
             }
         };
@@ -104,29 +105,26 @@ var login = {
             password: password
         };
         var answer = sendAjaxCall("register", request, "POST", $("section.modal-content"));
-        if (answer !== null) {
-            // TODO: Does not reach ?!
-            $("#usernameInput").val(answer["name"]);
-            $("#createUserModal").hide();
-        }
     },
 
     /**
-     * This function logs the user in
+     *  This function logs the user in
+     * @param username  dito
+     * @param password  dito
      */
     loginCheck: function (username, password) {
+        removeErrorMessages();
         //TODO: TEST
         if (username === 't') {
             openMainScreen();
             return;
-        }
-
-        var request = new Array(2);
-        request["name"] = username;
-        request["password"] = password;
-        var answer = sendAjaxCall("login", JSON.stringify(request), "GET", $("main"));
-        if (answer === true) {
-            openLoginScreen();
+        } else {
+            var request = {
+                name: username,
+                password: password
+            };
+            var answer = sendAjaxCall("login", request, "GET", $("main"));
+            //...
         }
     }
 };
@@ -158,17 +156,28 @@ function userInputKeyUp() {
 
 /**
  * disables / enables a certain button on the recognition whether a value is bigger than zero or not
+ * @param button    the button which should be enabled / disabled
+ * @param values     the values which should be checked
  */
-function toggleButton(button, value) {
-    var i = 0;
-    while (i < value.length && String(value[i]).length > 0) {
-        i++;
-    }
-    if (i === value.length) {
+function toggleButton(button, values) {
+    if (allStringsNotEmpty(values)) {
         button.prop('disabled', false);
     } else {
         button.prop('disabled', true);
     }
+}
+
+/**
+ * this function evaluates if all Strings are longer than 0 (not mepty)
+ * @param values         an array with values (preferably strings but not obligatory)
+ * @returns {boolean}   returns true if all the strings in the value array are longer than 0
+ */
+function allStringsNotEmpty(values) {
+    var i = 0;
+    while (i < values.length && String(values[i]).length > 0) {
+        i++;
+    }
+    return i === values.length;
 }
 
 /**
@@ -185,9 +194,8 @@ function sendAjaxCall(url, request, type, context) {
         dataType: "json",
         type: type,
         success: function (answer) {
-            console.log("ajax " + type + " success");
-            if (answer["message"] !== undefined) {
-                createAndAppendErrorMessage(context, answer['message']);
+            if (answer.message !== undefined) {
+                createAndAppendErrorMessage(context, answer.message);
                 return null;
             } else {
                 return answer;

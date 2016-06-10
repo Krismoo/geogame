@@ -2,14 +2,6 @@
  * TODO: better to put the variables in the vars they belong? SIMON?
  *          => like config stuff into "config"
  */
-
-///////////////////////////////////////////
-// Here all global variables get defined //
-///////////////////////////////////////////
-var range = [5, 15]; //default range beetween range[0] and range[1] (in km)
-var difficulty = "middle"; //TODO: difficulty still needs to be defined
-const MAX_RANGE = [1, 100];//this will be a range from 1km to >99km
-
 $(document).ready(function () {
     openLoginScreen();
     addListeners();
@@ -50,7 +42,8 @@ function openGameScreen() {
         game.appendPictureAndIndicatorNodesInCarousel(loadedPictures);
         game.createMenuNode(actualPoints);
     } else {
-
+        //TODO where to append? :(
+        createAndAppendErrorMessage("main", "could not load game!");
     }
 }
 
