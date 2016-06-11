@@ -15,6 +15,8 @@
 		'cipher_mode' => MCRYPT_MODE_CBC
 	)));
 	
+	define("nPuzzles", 2);
+	
 	function getDBConnection($connectionString, $user, $pwd) {
 		try {
 			return new PDO($connectionString, $user, $pwd);
@@ -51,8 +53,60 @@
 		if(sizeof($results) > 0) {
 			$playround = $results[0];
 		} else {
-			//TODO: create new playround
-			die("create new playround");
+			//1. create playround (linked to user)
+			$insertion = $db->prepare('INSERT INTO playround (UserID, StartDate, Finished) VALUES (:userid, :startdate, :finished)');
+			$insertion->bindParam(':userid', $userid);
+			$insertion->bindParam(':startdate', $startdate);
+			$insertion->bindParam(':finished', $finished);
+			$userid = $user["id"];
+			//date format 2016-05-30 00:00:00
+			$startdate = date('Y-m-d H:i:s');
+			$finished = 0;
+			
+			$success = $insertion->execute();
+			
+			if(!$success) {
+				$errorjson = array();
+				$errorjson["message"] = "Playround could not be created";
+				echo json_encode($errorjson);
+				die();
+			} 
+			
+			$selection = $db->prepare('SELECT * FROM playround WHERE userid = '.$user['id'].' AND Finished = 0');
+			$success = $selection->execute();
+			$results = $selection->fetchAll(PDO::FETCH_ASSOC);
+			$playround = $results[0];
+			
+			$playroundid = $playround["ID"];
+			//2. get all locations (ordered by rand)
+			$selection = $db->prepare('SELECT * FROM location ORDER BY RAND()');
+			$success = $selection->execute();
+			$locations = $selection->fetchAll(PDO::FETCH_ASSOC);
+			
+			if(sizeof($locations) < nPuzzles) {
+				$errorjson = array();
+				$errorjson["message"] = "Too less locations in db";
+				echo json_encode($errorjson);
+				die();
+			}
+			
+			//3. create n puzzles (linked to playround and 1 random location)
+			for($i = 0; $i < nPuzzles; $i++) {				
+				$insertion = $db->prepare('INSERT INTO puzzle (PlayroundID, LocationID) VALUES (:playroundid, :locationid)');
+				$insertion->bindParam(':playroundid', $playroundid);
+				$insertion->bindParam(':locationid', $locationid);
+				$locationid = $locations[$i]["ID"];
+				
+				$success = $insertion->execute();
+				
+				if(!$success) {
+					$errorjson = array();
+					$errorjson["message"] = "Puzzle $i could not be created";
+					echo json_encode($errorjson);
+					die();
+				}
+			}
+			
 		}
 		$selection = $db->prepare('SELECT * FROM puzzle WHERE playroundid = '.$playround['ID']);
 		$success = $selection->execute();
@@ -114,10 +168,38 @@
 	});
 	
 	$app->post('/login', function() use ($app) {
-		$json = $app->request->getBody();
-		//HTTPS
-		//Token als Cookie
-		echo $json;
+		$request = json_decode($app->request->getBody(),true);
+		
+		$db = getDBConnection('mysql:host='.HOST.';dbname='.DBNAME, USER, PWD);
+		
+		$selection = $db->prepare('SELECT * FROM user WHERE Name = \''.$request['name'].'\' AND Password = \''.$request['password'].'\'');
+		$success = $selection->execute();
+		$users = $selection->fetchAll(PDO::FETCH_ASSOC);
+		
+		if(sizeof($users) != 1) {
+			$errorjson = array();
+			$errorjson["message"] = "Falsches Passwort für User ".$request['name'].".";
+			echo json_encode($errorjson);
+		} else {
+			//return user with new token
+			; 
+			$insertion = $db->prepare('UPDATE user SET CurrentToken = :currenttoken WHERE Name = \''.$request['name'].'\'');
+			$insertion->bindParam(':currenttoken', $currenttoken);
+			$currenttoken = createToken();
+			
+			$success = $insertion->execute();
+			
+			if($success) {
+				$returnjson = array();
+				$returnjson["name"] = $request['name'];
+				$returnjson["currenttoken"] = $currenttoken;
+				echo json_encode($returnjson);
+			} else {
+				$errorjson = array();
+				$errorjson["message"] = "User $name konnte nicht eingeloggt werden.";
+				echo json_encode($errorjson);
+			}
+		}
 	});
 	
 	$app->post('/register', function() use ($app) {
@@ -159,8 +241,14 @@
 		}
 	});
 	
-	function createToken() {
-		return "kajcqkejcr134cqkda";
+	function createToken($length = 10) {
+		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		$charactersLength = strlen($characters);
+		$randomString = '';
+		for ($i = 0; $i < $length; $i++) {
+			$randomString .= $characters[rand(0, $charactersLength - 1)];
+		}
+		return $randomString;
 	}
 	
 	$app->post('/verifylocation', function() use ($app) {
