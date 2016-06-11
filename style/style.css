@@ -2,6 +2,14 @@ body {
     overflow: hidden; /* Never scroll */
 }
 
+main > section {
+    text-align: left;
+}
+
+main {
+    text-align: center;
+}
+
 .headerText {
     text-align: center;
 }
@@ -56,6 +64,11 @@ body {
     padding-bottom: 10px;
     padding-top: 10px;
     margin-top: 10px;
+}
+
+#usernameInput, #passwordInput {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
 }
 
 /* Styles the Highscore table*/
@@ -122,7 +135,7 @@ thead {
 
 /* styles the alert when you put wrong login data */
 .alert {
-    width: 50%;
+    display: inline-block;
     margin: auto;
     margin-top: 10px;
     text-align: center;
@@ -211,6 +224,20 @@ input.btn {
     border: 1px solid #888;
     width: 90%;
     z-index: 99;
+    text-align: center;
+}
+
+#loginButton {
+    float: right;
+}
+
+#about {
+    width: 90%;
+    margin: auto;
+}
+
+form > input {
+    width: 40%;
 }
 
 /* The Button to close the modal */
