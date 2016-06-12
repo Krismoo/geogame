@@ -116,6 +116,8 @@ var game = {
      */
     loadPictures: function () {
         //sends wrong... -.-
+        //TODO: omg why password and ID??
+        //take this away and use getLoginJSON() !!
         var request = {
             'id': 1,
             'name': "rissi",
@@ -123,7 +125,8 @@ var game = {
             'token': "hjhfzufljnu8655556vdjfhg"
         };
 
-        var answer = sendAjaxCall("pictures", request, "GET");
+        //TODO CALLBACK NEEDED!
+        var answer = sendAjaxCall("pictures", getLoginJSON(), "GET");
         console.log(answer);
         return answer;
     },

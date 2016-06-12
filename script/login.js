@@ -1,6 +1,7 @@
 /**
  * Created by Nicolas on 09.06.2016.
  */
+var currentToken;
 
 /**
  * This variable defines all the functions for the loginscreen
@@ -107,18 +108,11 @@ var login = {
      */
     loginCheck: function (username, password) {
         removeErrorMessages();
-        //TODO: TEST
-        if (username === 't') {
-            openMainScreen();
-            return;
-        } else {
-            var request = {
-                name: username,
-                password: password
-            };
-            var answer = sendAjaxCall("login", request, "GET", $("main"));
-            //...
-        }
+        var request = {
+            name: username,
+            password: password
+        };
+        sendAjaxCall("login", request, "POST", $("main"));
     }
 };
 
@@ -181,6 +175,7 @@ function allStringsNotEmpty(values) {
  * @param context   the context of the call, say where to append error messages
  */
 function sendAjaxCall(url, request, type, context) {
+    var currentToken;
     $.ajax({
         url: "api/" + url,
         data: JSON.stringify(request),
@@ -189,9 +184,9 @@ function sendAjaxCall(url, request, type, context) {
         success: function (answer) {
             if (answer.message !== undefined) {
                 createAndAppendErrorMessage(context, answer.message);
-                return null;
             } else {
-                return answer;
+                setLoggedInUser(answer.name,answer.currenttoken);
+                openMainScreen();
             }
         },
         error: function () {

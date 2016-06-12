@@ -1,20 +1,20 @@
-/**
- * TODO: better to put the variables in the vars they belong? SIMON?
- *          => like config stuff into "config"
- */
 $(document).ready(function () {
     openLoginScreen();
     addListeners();
-    /* TODO: Needed? @SIMON
-     $('body').on('click', 'button', function (event) {
-     event.preventDefault();
-     window.navigator.geolocation.getCurrentPosition(function (position) {
-     console.log(position);
-     //doSomething()
-     });
-     });
-     */
+
+    window.navigator.geolocation.getCurrentPosition(function (aPosition) {
+        console.log(aPosition);
+        position = aPosition;
+    })
 });
+
+///////////////////////////////////////////
+// Here the global variables get defined //
+///////////////////////////////////////////
+
+var name = null;
+var currentToken = null;
+var position = null;
 
 //////////////////////////////////////
 // Here all the screens get defined //
@@ -114,9 +114,28 @@ function createAndAppendErrorMessage(node, message) {
 }
 
 /**
- * removes all alerts
+ * removes all error messages
  */
 function removeErrorMessages() {
     $(".alert").remove();
 }
 
+/**
+ * Setter to set login information
+ * @param aName          the name of the logged in user
+ * @param aCurrenttoken  the current token
+ */
+function setLoggedInUser(aName, aCurrentToken) {
+    name = aName;
+    currentToken = aCurrentToken;
+    console.log("Login successful: "+name+", "+currentToken);
+}
+
+//TODO: Getters for name, token and position?
+
+function getLoginJSON() {
+    return {
+        'name': name,
+        'token': currentToken
+    }
+}
