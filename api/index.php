@@ -16,6 +16,10 @@
 	)));
 	
 	define("nPuzzles", 2);
+	define("maxTime", 10080); //in minutes
+	define("hintpenalty", 3000);
+	define("basicpoints", 500);
+	define("validRadius", 1000); //in meter
 	
 	function getDBConnection($connectionString, $user, $pwd) {
 		try {
@@ -36,15 +40,37 @@
 		Start Routing Section
 	*/
 
+	function getUser($token, $db) {
+		if(!$token) {
+			$errorjson = array();
+			$errorjson["message"] = "Please login for further requests";
+			echo json_encode($errorjson);
+			die();
+		}
+		
+		//get user
+        $selection = $db->prepare('SELECT * FROM user WHERE CurrentToken = \''.$token.'\'');
+		$success = $selection->execute();
+		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
+		if(sizeof($results) == 1) {
+			$user = $results[0];
+			return $user;
+		} else {
+			$errorjson = array();
+			$errorjson["message"] = "Please login again.";
+			echo json_encode($errorjson);
+			die();
+		}
+	}
+	
 	$app->get('/pictures', function() use($app){
-        $request = json_decode($app->request->getBody(),true);
-
+        $token = $app->request()->params('token');
+		
         $db = getDBConnection('mysql:host='.HOST.';dbname='.DBNAME, USER, PWD);
 
-        //TODO: Login
-        //took this into game.loadPictures!
+		$user = getUser($token, $db);
 
-		$selection = $db->prepare('SELECT * FROM playround WHERE userid = '.$user['id'].' AND Finished = 0');
+		$selection = $db->prepare('SELECT * FROM playround WHERE userid = '.$user['ID'].' AND Finished = 0');
 		$success = $selection->execute();
 		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
 		if(sizeof($results) > 0) {
@@ -55,7 +81,7 @@
 			$insertion->bindParam(':userid', $userid);
 			$insertion->bindParam(':startdate', $startdate);
 			$insertion->bindParam(':finished', $finished);
-			$userid = $user["id"];
+			$userid = $user["ID"];
 			//date format 2016-05-30 00:00:00
 			$startdate = date('Y-m-d H:i:s');
 			$finished = 0;
@@ -69,7 +95,7 @@
 				die();
 			} 
 			
-			$selection = $db->prepare('SELECT * FROM playround WHERE userid = '.$user['id'].' AND Finished = 0');
+			$selection = $db->prepare('SELECT * FROM playround WHERE userid = '.$user['ID'].' AND Finished = 0');
 			$success = $selection->execute();
 			$results = $selection->fetchAll(PDO::FETCH_ASSOC);
 			$playround = $results[0];
@@ -167,6 +193,13 @@
 	$app->post('/login', function() use ($app) {
 		$request = json_decode($app->request->getBody(),true);
 		
+		if(!$request["name"] || !$request["password"]) {
+			$errorjson = array();
+			$errorjson["message"] = "Param 'name' or 'password' invalid";
+			echo json_encode($errorjson);
+			die();
+		}
+		
 		$db = getDBConnection('mysql:host='.HOST.';dbname='.DBNAME, USER, PWD);
 		
 		$selection = $db->prepare('SELECT * FROM user WHERE Name = \''.$request['name'].'\' AND Password = \''.$request['password'].'\'');
@@ -179,7 +212,6 @@
 			echo json_encode($errorjson);
 		} else {
 			//return user with new token
-			; 
 			$insertion = $db->prepare('UPDATE user SET CurrentToken = :currenttoken WHERE Name = \''.$request['name'].'\'');
 			$insertion->bindParam(':currenttoken', $currenttoken);
 			$currenttoken = createToken();
@@ -202,6 +234,13 @@
 	$app->post('/register', function() use ($app) {
 		$request = json_decode($app->request->getBody(),true);
 
+		if(!$request["name"] || !$request["password"]) {
+			$errorjson = array();
+			$errorjson["message"] = "Param 'name' or 'password' invalid";
+			echo json_encode($errorjson);
+			die();
+		}
+		
 		$db = getDBConnection('mysql:host='.HOST.';dbname='.DBNAME, USER, PWD);
 
 		$selection = $db->prepare('SELECT * FROM user WHERE Name = \''.$request['name'].'\'');
@@ -248,31 +287,331 @@
 		return $randomString;
 	}
 
+	function nearEnough($lat, $long, $location) {
+		return haversineGreatCircleDistance($lat, $long, $location["Latitude"], $location["Longitude"]) < validRadius;
+	}
+	
+	//http://stackoverflow.com/questions/10053358/measuring-the-distance-between-two-coordinates-in-php
+	function haversineGreatCircleDistance($latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo, $earthRadius = 6371000) {
+		// convert from degrees to radians
+		$latFrom = deg2rad($latitudeFrom);
+		$lonFrom = deg2rad($longitudeFrom);
+		$latTo = deg2rad($latitudeTo);
+		$lonTo = deg2rad($longitudeTo);
+
+		$latDelta = $latTo - $latFrom;
+		$lonDelta = $lonTo - $lonFrom;
+
+		$angle = 2 * asin(sqrt(pow(sin($latDelta / 2), 2) +
+			cos($latFrom) * cos($latTo) * pow(sin($lonDelta / 2), 2)));
+		return $angle * $earthRadius;
+	}
+	
 	$app->post('/verifylocation', function() use ($app) {
-		//TODO: Login
+		$request = json_decode($app->request->getBody(),true);
+		
+		if(!isset($request["puzzleid"]) || !isset($request["latitude"]) || !isset($request["longitude"])) {
+			$errorjson = array();
+			$errorjson["message"] = "Param 'puzzleid', 'latitude' or 'longitude' invalid";
+			echo json_encode($errorjson);
+			die();
+		}
+		
+		$token = $request["token"];
+		$db = getDBConnection('mysql:host='.HOST.';dbname='.DBNAME, USER, PWD);
+		$user = getUser($token, $db);
 
-
-		$json = $app->request->getBody();
-
-		echo $json;
+		//getpuzzle with puzzleid
+		$selection = $db->prepare('SELECT * FROM puzzle WHERE id = \''.$request["puzzleid"].'\'');
+		$success = $selection->execute();
+		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
+		$puzzle = $results[0];
+		
+		//own playround?
+		$selection = $db->prepare('SELECT * FROM playround WHERE id = \''.$puzzle["PlayRoundID"].'\'');
+		$success = $selection->execute();
+		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
+		$playround = $results[0];
+		
+		$selection = $db->prepare('SELECT * FROM user WHERE id = \''.$playround["UserID"].'\'');
+		$success = $selection->execute();
+		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
+		$puzzleuser = $results[0];
+		
+		if($puzzleuser["CurrentToken"] != $request["token"]) {
+			$errorjson = array();
+			$errorjson["message"] = "Invalid operation";
+			echo json_encode($errorjson);
+			die();
+		}
+		
+		//already done?
+		if($puzzle["done"]) {
+			$errorjson = array();
+			$errorjson["message"] = "Puzzle already done";
+			echo json_encode($errorjson);
+			die();
+		}
+		
+		//correct location?
+		$selection = $db->prepare('SELECT * FROM location WHERE ID = \''.$puzzle["LocationID"].'\'');
+		$success = $selection->execute();
+		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
+		$location = $results[0];
+		
+		if(!nearEnough($request["latitude"], $request["longitude"], $location)) {
+			$errorjson = array();
+			$errorjson["message"] = "Your position is not near enough. Would you like to use a hint?";
+			echo json_encode($errorjson);
+			die();
+		}
+		
+		//calc points
+		$enddate = date('Y-m-d H:i:s');
+		$startdate = $playround["StartDate"];
+		
+		//Points for:
+		//  every minute less used than 1 week (10080 min)
+		//  hint used => -3000
+		//  basic points => 500
+		$diff = strtotime($enddate) - strtotime($startdate);
+		if($diff > maxTime) {
+			$timepoints = 0;
+		} else {
+			$timepoints = maxTime - $diff;
+		}
+		if($puzzle["hintused"]) {
+			$hintpoints = -hintpenalty;
+		} else {
+			$hintpoints = 0;
+		}
+		$points = $timepoints + $hintpoints + basicpoints;
+		
+		//set done (flag & date) and points
+		$insertion = $db->prepare('UPDATE puzzle SET done = 1, solved = 1, Enddate = :enddate, points = :points WHERE ID = \''.$puzzle['ID'].'\'');
+		$insertion->bindParam(':enddate', $enddate);
+		$insertion->bindParam(':points', $points);
+		
+		$success = $insertion->execute();
+		
+		if($success) {
+			//getallpuzzleofplayround
+			$selection = $db->prepare('SELECT * FROM puzzle WHERE PlayRoundID = \''.$playround["ID"].'\'');
+			$success = $selection->execute();
+			$puzzles = $selection->fetchAll(PDO::FETCH_ASSOC);
+			//alldone?
+			$alldone = true;
+			for($i = 0; $i < sizeof($puzzles); $i++) {
+				if($puzzles[$i]["done"] == 0) {
+					$alldone = false;
+				}
+			}
+			if($alldone) {
+				//set playround finished
+				$insertion = $db->prepare('UPDATE playround SET Finished = 1 WHERE ID = \''.$playround['ID'].'\'');				
+				$success = $insertion->execute();
+				
+				if($success) {
+					$resultjson = array();
+					$resultjson["message"] = "Puzzle solved and playround finished.";
+					echo json_encode($resultjson);
+				} else {
+					$errorjson = array();
+					$errorjson["message"] = "Playround could not be finished.";
+					echo json_encode($errorjson);
+				}
+			} else {
+				$resultjson = array();
+				$resultjson["message"] = "Puzzle solved.";
+				echo json_encode($resultjson);
+			}
+				
+		} else {
+			$errorjson = array();
+			$errorjson["message"] = "Puzzle could not be solved.";
+			echo json_encode($errorjson);
+		}
 	});
 
 	$app->post('/skippicture', function() use ($app) {
-		//TODO: Login
+		$request = json_decode($app->request->getBody(),true);
+		
+		if(!isset($request["puzzleid"])) {
+			$errorjson = array();
+			$errorjson["message"] = "Param 'puzzleid' invalid";
+			echo json_encode($errorjson);
+			die();
+		}
+		
+		$token = $request["token"];
+		$db = getDBConnection('mysql:host='.HOST.';dbname='.DBNAME, USER, PWD);
+		$user = getUser($token, $db);
 
-
-		$json = $app->request->getBody();
-
-		echo $json;
+		//getpuzzle with puzzleid
+		$selection = $db->prepare('SELECT * FROM puzzle WHERE id = \''.$request["puzzleid"].'\'');
+		$success = $selection->execute();
+		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
+		$puzzle = $results[0];
+		
+		//own playround?
+		$selection = $db->prepare('SELECT * FROM playround WHERE id = \''.$puzzle["PlayRoundID"].'\'');
+		$success = $selection->execute();
+		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
+		$playround = $results[0];
+		
+		$selection = $db->prepare('SELECT * FROM user WHERE id = \''.$playround["UserID"].'\'');
+		$success = $selection->execute();
+		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
+		$puzzleuser = $results[0];
+		
+		if($puzzleuser["CurrentToken"] != $request["token"]) {
+			$errorjson = array();
+			$errorjson["message"] = "Invalid operation";
+			echo json_encode($errorjson);
+			die();
+		}
+		
+		//already done?
+		if($puzzle["done"]) {
+			$errorjson = array();
+			$errorjson["message"] = "Puzzle already done";
+			echo json_encode($errorjson);
+			die();
+		}
+		
+		//calc points
+		$enddate = date('Y-m-d H:i:s');
+		$startdate = $playround["StartDate"];
+		
+		//Points for:
+		//  every minute less used than 1 week (10080 min)
+		//  hint used => -3000
+		//  basic points => 500
+		$diff = strtotime($enddate) - strtotime($startdate);
+		if($diff > maxTime) {
+			$timepoints = 0;
+		} else {
+			$timepoints = maxTime - $diff;
+		}
+		if($puzzle["hintused"]) {
+			$hintpoints = -hintpenalty;
+		} else {
+			$hintpoints = 0;
+		}
+		$points = $hintpoints;
+		
+		//set done (flag & date) and points
+		$insertion = $db->prepare('UPDATE puzzle SET done = 1, Enddate = :enddate, points = :points WHERE ID = \''.$puzzle['ID'].'\'');
+		$insertion->bindParam(':enddate', $enddate);
+		$insertion->bindParam(':points', $points);
+		
+		$success = $insertion->execute();
+		
+		if($success) {
+			//getallpuzzleofplayround
+			$selection = $db->prepare('SELECT * FROM puzzle WHERE PlayRoundID = \''.$playround["ID"].'\'');
+			$success = $selection->execute();
+			$puzzles = $selection->fetchAll(PDO::FETCH_ASSOC);
+			//alldone?
+			$alldone = true;
+			for($i = 0; $i < sizeof($puzzles); $i++) {
+				if($puzzles[$i]["done"] == 0) {
+					$alldone = false;
+				}
+			}
+			if($alldone) {
+				//set playround finished
+				$insertion = $db->prepare('UPDATE playround SET Finished = 1 WHERE ID = \''.$playround['ID'].'\'');				
+				$success = $insertion->execute();
+				
+				if($success) {
+					$resultjson = array();
+					$resultjson["message"] = "Puzzle skipped and playround finished.";
+					echo json_encode($resultjson);
+				} else {
+					$errorjson = array();
+					$errorjson["message"] = "Playround could not be finished.";
+					echo json_encode($errorjson);
+				}
+			} else {
+				$resultjson = array();
+				$resultjson["message"] = "Puzzle skipped.";
+				echo json_encode($resultjson);
+			}
+				
+		} else {
+			$errorjson = array();
+			$errorjson["message"] = "Puzzle could not be skipped.";
+			echo json_encode($errorjson);
+		}
+		
 	});
 
 	$app->post('/usehint', function() use ($app) {
-		//TODO: Login
-
-
-		$json = $app->request->getBody();
-
-		echo $json;
+		$request = json_decode($app->request->getBody(),true);
+		
+		$db = getDBConnection('mysql:host='.HOST.';dbname='.DBNAME, USER, PWD);
+		
+		$user = getUser($request["token"], $db);
+		
+		if(!$request["puzzleid"]) {
+			$errorjson = array();
+			$errorjson["message"] = "Param 'puzzleid' invalid.";
+			echo json_encode($errorjson);
+			die();
+		}
+		
+		//get puzzle with puzzleid
+		$selection = $db->prepare('SELECT * FROM puzzle WHERE id = \''.$request["puzzleid"].'\'');
+		$success = $selection->execute();
+		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
+		$puzzle = $results[0];
+		
+		//own playround?
+		$selection = $db->prepare('SELECT * FROM playround WHERE id = \''.$puzzle["PlayRoundID"].'\'');
+		$success = $selection->execute();
+		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
+		$playround = $results[0];
+		
+		$selection = $db->prepare('SELECT * FROM user WHERE id = \''.$playround["UserID"].'\'');
+		$success = $selection->execute();
+		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
+		$puzzleuser = $results[0];
+		
+		if($puzzleuser["CurrentToken"] != $request["token"]) {
+			$errorjson = array();
+			$errorjson["message"] = "Invalid operation";
+			echo json_encode($errorjson);
+			die();
+		}
+		
+		//not hinted/done/solved
+		if($puzzle["hintused"] || $puzzle["done"] || $puzzle["solved"]) {
+			$errorjson = array();
+			$errorjson["message"] = "Puzzle done or solved or hint already used";
+			echo json_encode($errorjson);
+			die();
+		}
+		
+		//set hint = 1
+		$insertion = $db->prepare('UPDATE puzzle SET hintused = 1 WHERE ID = \''.$puzzle['ID'].'\'');
+		
+		$success = $insertion->execute();
+		
+		if($success) {
+			$selection = $db->prepare('SELECT * FROM location WHERE id = \''.$puzzle["LocationID"].'\'');
+			$success = $selection->execute();
+			$results = $selection->fetchAll(PDO::FETCH_ASSOC);
+			$location = $results[0];
+			
+			$returnjson = array();
+			$returnjson["hint"] = $location["Hint"];
+			echo json_encode($returnjson);
+		} else {
+			$errorjson = array();
+			$errorjson["message"] = "Hint could not be set.";
+			echo json_encode($errorjson);
+		}
 	});
 
 	$app->run();
