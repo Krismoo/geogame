@@ -10,23 +10,20 @@ var highscore = {
      * Creates the Highscore view for and appends it to the main
      */
     openAndCreateHighscoreView: function () {
-        var highscorescreen = "<header><h3 class='headerText'>Highscore</h3></header>" +
-            "<section class='contentSize'>" +
-            "<table class='center table-responsive panel panel-primary'>" +
-            "<thead class='panel-heading'><tr><th>Platz</th><th>Name</th><th class='bigTd'>Punkte</th></tr></thead>" +
-            "<tbody class='panel-body'></tbody>" +
-            "</table>" +
-            "<br/><p class='buttonContainer'>" +
-            "<button id='zurueckButtonH' class='button btn btn-default'>Zurück</button>" +
-            "</p></section>";
-        $("main").append(highscorescreen);
+        $.ajax({
+            async: false,
+            type: 'GET',
+            url: 'pageContent/highscoreScreen.html',
+            success: function (highscoreScreen) {
+                $("main").append(highscoreScreen);
+            }
+        });
     },
 
     /**
      * This function loads the highscores and appends them to the table
      */
     loadHighscores: function () {
-        $("tr.content").remove();
         var i = 1;
         $.ajax({
             url: "api/highscore",

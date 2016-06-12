@@ -11,31 +11,18 @@ var MAX_RANGE = [1, 100];//this will be a range from 1km to >99km
 var config = {
     /**
      * Creates the config view  and appends it to the main
+     * this is sequential, as the function calls after this function need the
+     * structure which gets appended here!
      */
     createAndAppendConfigView: function () {
-        var configscreen = "<header><h3 class='headerText'>Config</h3></header>" +
-            "<section class='contentSize'>" +
-            "<form>" +
-            "<section class='center input-group input-config'>" +
-            "<p class='input-group-addon input-addon-login2'>Schwierigkeit: </p>" +
-            "<select id='difficulty' class='form-control'>" +
-            "<option value='easy'>Leicht</option>" +
-            "<option value='middle'>Mittel</option>" +
-            "<option value='difficult'>Schwer</option>" +
-            "</select> " +
-            "</section>" +
-            "<section class='center panel panel-default'>" +
-            "<section class='panel-heading'>" +
-            "<label for='range'>Reichweite:</label>" +
-            "<input type='text' id='range' readonly >" +
-            "</section>" +
-            "<section class='panel-body'><p id='slider-range'></p></p>" +
-            "</section></form>" +
-            "<p class='buttonContainer'>" +
-            "<button id='saveConfigButton' class='button btn btn-default'>Speichern</button><br/>" +
-            "<button id='zurueckButtonC' class='button btn btn-default'>Zurück</button>" +
-            "</p></section>";
-        $("main").append(configscreen);
+        $.ajax({
+            async: false,
+            type: 'GET',
+            url: 'pageContent/configScreen.html',
+            success: function (configScreen) {
+                $("main").append(configScreen);
+            }
+        });
     },
 
     /**

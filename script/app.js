@@ -35,12 +35,10 @@ function openLoginScreen() {
 function openGameScreen() {
     eraseScreen();
     game.createAndAppendGameView();
-    game.createAndAppendCarouselNode();
+    game.getPointsOfActualGame();
     var loadedPictures = game.loadPictures();
-    var actualPoints = game.getPointsOfActualGame();
-    if (loadedPictures !== null && actualPoints !== null) {
+    if (loadedPictures !== null) {
         game.appendPictureAndIndicatorNodesInCarousel(loadedPictures);
-        game.createMenuNode(actualPoints);
     } else {
         //TODO where to append? :(
         createAndAppendErrorMessage("main", "could not load game!");
@@ -128,14 +126,17 @@ function removeErrorMessages() {
 function setLoggedInUser(aName, aCurrentToken) {
     name = aName;
     currentToken = aCurrentToken;
-    console.log("Login successful: "+name+", "+currentToken);
+    console.log("Login successful: " + name + ", " + currentToken);
 }
 
 //TODO: Getters for name, token and position?
-
+/**
+ * returns a JSON object with the login data
+ * @returns {{name: *, token: *}}
+ */
 function getLoginJSON() {
     return {
         'name': name,
         'token': currentToken
-    }
+    };
 }

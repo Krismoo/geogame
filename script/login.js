@@ -11,24 +11,20 @@ var login = {
      * This function creates the login screen and appends it to main
      */
     createAndAppendLoginView: function () {
-        var loginScreen = "<header><h1 class='headerText'>GEO GAME</h1></header>" +
-            "<section class='loginSize panel panel-default panel-body'>" +
-            "<form>" +
-            "<section class='input-group input-group-lg'>" +
-            "<h4  class='input-group-addon input-addon-login'>Benutzername: </h4>" +
-            "<input class='form-control' id='usernameInput' onkeyup='userInputKeyUp()' placeholder='Username' type='text'/></br>" +
-            "</section>" +
-            "<section class='input-group input-group-lg'>" +
-            "<h4  class='input-group-addon input-addon-login'>Passwort: </h4>" +
-            "<input class='form-control' id='passwordInput' onkeyup='userInputKeyUp()' placeholder='Password' type='password'/></br>" +
-            "</section>" +
-            "<input id='registerButton' type='submit' value='Register' class='btn btn-lg btn-default'/>" +
-            "<input id='loginButton' type='submit' value='Login' class='btn btn-lg btn-default' disabled/>" +
-            "</form>" +
-            "</section>";
-        $("main").append(loginScreen);
+        $.get("pageContent/loginScreen.html", function (loginScreen) {
+            $("main").append(loginScreen);
+        });
     },
 
+    /**
+     * This function creates and appends the Popup to create a new user
+     */
+    createAndAppendRegistrationPopup: function () {
+        $.get("pageContent/registrationModal.html", function (registerForm) {
+            $("main").append(registerForm);
+        });
+    },
+    
     /**
      * This function adds the Listeners to the buttons
      */
@@ -57,36 +53,6 @@ var login = {
                 createAndAppendErrorMessage($("section.modal-content"), "Passwörter stimmen nicht überein!");
             }
         });
-    },
-
-    /**
-     * This function creates and appends the Popup to create a new user
-     */
-    createAndAppendRegistrationPopup: function () {
-        var registerForm = "<header><h4  class='headerText'>Register</h4></header>" +
-            "<section  class='center loginSize'>" +
-            "<form>" +
-            "<section class='input-group'>" +
-            "<p class='input-group-addon input-addon-login'>Benutzername:</p>" +
-            "<input class='form-control' onkeyup='newUserInputKeyUp()' id='newUsernameInput' type='text'>" +
-            "</section>" +
-            "<section class='input-group'>" +
-            "<p class='input-group-addon input-addon-login'>Passwort:</p>" +
-            "<input class='form-control' onkeyup='newUserInputKeyUp()' id='newPasswordInput' type='password'>" +
-            "</section>" +
-            "<section class='input-group'>" +
-            "<p class='input-group-addon input-addon-login'>Passwort wiederholen:</p>" +
-            "<input class='form-control' onkeyup='newUserInputKeyUp()' id='newPassword2Input' type='password'>" +
-            "</section>" +
-            "<input id='registrationSubmitButton' type='submit' value='Register' class='btn btn-default' disabled>" +
-            "</form>" +
-            "</section>";
-
-        var registrationPopup = "<section id='createUserModal' class='modal'>" +
-            "<section class='modal-content'>" +
-            "<p id='closeModal'>x</p>" + registerForm + "</section>" +
-            "</section>";
-        $("main").append(registrationPopup);
     },
 
     /**
@@ -185,7 +151,7 @@ function sendAjaxCall(url, request, type, context) {
             if (answer.message !== undefined) {
                 createAndAppendErrorMessage(context, answer.message);
             } else {
-                setLoggedInUser(answer.name,answer.currenttoken);
+                setLoggedInUser(answer.name, answer.currenttoken);
                 openMainScreen();
             }
         },

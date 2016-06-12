@@ -7,42 +7,19 @@
  */
 var game = {
     /**
-     * Creates the Mainstructure for the Gameview  and appends it to the main
+     * Creates the Mainstructure for the Gameview and appends it to the main
+     * this is sequential, as the function calls after this function need the
+     * structure which gets appended here!
      */
     createAndAppendGameView: function () {
-        var gameScreen = "<header><h3 class='headerText'>Go to the place on this Picture" +
-            "<button id='zurueckButtonG' class='menubtn btn btn-default'>Menu</button></h3></header>" +
-            "<p>" +
-            "<section id='myCarousel' class='carousel slide' data-ride='carousel'></section>" +
-            "<p class='menu'></p>" +
-            "</p>";
-        $("main").append(gameScreen);
-    },
-
-    /**
-     * Creates the Carosuel node for the Gameview and appends it to the Mainstructure
-     */
-    createAndAppendCarouselNode: function () {
-        var carouselNode = "" +
-            "<p class='carousel-indicators'>" +
-            "<!-- Indicators! -->" +
-            "</p>" +
-
-            "<!-- Wrapper for slides -->" +
-            "<section class='carousel-inner' role='listbox'>" +
-            "<!--Pictures! -->" +
-            "</section>" +
-
-            "<!-- Left and right controls -->" +
-            "<a class='left carousel-control' href='#myCarousel' role='button' data-slide='prev'>" +
-            "<p class='glyphicon glyphicon-chevron-left' aria-hidden='true'></p>" +
-            "<p class='sr-only'>Previous</p>" +
-            "</a>" +
-            "<a class='right carousel-control' href='#myCarousel' role='button' data-slide='next'>" +
-            "<p class='glyphicon glyphicon-chevron-right' aria-hidden='true'></p>" +
-            "<p class='sr-only'>Next</p>" +
-            "</a>";
-        $("#myCarousel").append(carouselNode);
+        $.ajax({
+            async: false,
+            type: 'GET',
+            url: 'pageContent/gameScreen.html',
+            success: function (gameScreen) {
+                $("main").append(gameScreen);
+            }
+        });
     },
 
     /**
@@ -52,7 +29,6 @@ var game = {
     appendPictureAndIndicatorNodesInCarousel: function (pictures) {
         var pictureNodes = "";
         var indicatorNodes = "";
-
         //TODO: This should use "pictures" from "loadPictures()" and get the pictures on the right way!
         for (var i = 1; i <= 10; i++) {
             var numberString;
@@ -67,21 +43,13 @@ var game = {
                 "</p>";
             indicatorNodes += "<li data-target='#myCarousel' data-slide-to='" + (i - 1) + "'></li>";
         }
-        $(".carousel-inner").append(pictureNodes);
-        $(".carousel-indicators").append(indicatorNodes);
-        $("p.item").first().addClass("active item-active");
-        $("li").first().addClass("active");
-    },
+        //TODO: is failing....
+        $("main").find(".carousel-inner").append(pictureNodes);
+        //  $("main").append(pictureNodes); //TODO THIS WORKS?!?!???!!?!a
 
-    /**
-     * Creates the Menu node for the game view and appends it to the Mainstructure
-     */
-    createMenuNode: function (actualPoints) {
-        var menuNode = "<input id='checkLocationButton' type='submit' value='Check Location' class='btn btn-lg btn-default'/>" +
-            "<h3>Points: " + actualPoints + "</h3>" +
-            "<input id='giveAHint' type='submit' value='Give me a hint' class='btn btn btn-default'/><br/>" +
-            "<input id='skipPicture' type='submit' value='Skip Picture' class='btn btn btn-default'/>";
-        $(".menu").append(menuNode);
+        $("main").find(".carousel-indicators").append(indicatorNodes);
+        $("main").find("p.item").first().addClass("active item-active");
+        $("li").first().addClass("active");
     },
 
     /**
@@ -147,11 +115,13 @@ var game = {
 
     //TODO: IMPLEMENT "getPointsOfActualGame" in db!!
     getPointsOfActualGame: function (request) {
-        var answer = sendAjaxCall("pictures", request, "GET");
+        //TODO: login stuff as request
+        var answer = sendAjaxCall("getPointsOfActualGame", request, "GET");
         if (answer === undefined) {
-            return "666";
+            $("#points").text("Points: " + 666);
+        } else {
+            $("#points").text("Points: " + answer);
         }
-        return answer;
     },
 
     //TODO: IMPLEMENT "checkLocation"
