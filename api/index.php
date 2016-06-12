@@ -15,7 +15,7 @@
 		'cipher_mode' => MCRYPT_MODE_CBC
 	)));
 	
-	define("nPuzzles", 2);
+	define("nPuzzles", 10);
 	define("maxTime", 10080); //in minutes
 	define("hintpenalty", 3000);
 	define("basicpoints", 500);
@@ -30,9 +30,9 @@
 	}
 
 	define('HOST',"localhost");
-	define('DBNAME',"geogame");
-	define('USER',"root");
-	define('PWD',"");
+	define('DBNAME',"glowych_geogame");
+	define('USER',"glowych_geogame");
+	define('PWD',"My+5ai!3qy?9i");
 
 	header('Content-type:application/json; charset=utf-8');
 
