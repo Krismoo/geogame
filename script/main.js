@@ -41,6 +41,18 @@ var main = {
 
         $('body').on('click', '#logoutButton', function (event) {
             event.preventDefault();
+            var request = {token: localStorage.getItem("token")};
+            $.ajax({
+                type: "POST",
+                url: "api/logout",
+                data: request,
+                dataType: "json",
+                success: function () {
+                },
+                error: function () {
+                }
+            });
+            localStorage.removeItem("token");
             openLoginScreen();
         });
     }

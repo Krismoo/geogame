@@ -1,9 +1,7 @@
 /**
  * Created by Nicolas on 09.06.2016.
  */
-var range = [5, 15]; //default range beetween range[0] and range[1] (in km)
-var difficulty = "middle"; //TODO: difficulty still needs to be defined
-var MAX_RANGE = [1, 100];//this will be a range from 1km to >99km
+var verifyDistance = 1000;      //the max distance to validate a puzzle
 
 /**
  * This variable defines all the functions for the config screen
@@ -29,45 +27,31 @@ var config = {
      * Intializes the settings which are stored in this js
      */
     intializeSettings: function () {
-        $("select").val(difficulty);
-        var newRange = [range[0], range[1]];
-        var newDifficulty = difficulty;
-
-        $("#slider-range").slider({
-            range: true,
-            min: MAX_RANGE[0],
-            max: MAX_RANGE[1],
-            values: [range[0], range[1]],
+        var newRange = range;
+        $("#slider").slider({
+            range: "min",
+            value: verifyDistance,
+            min: 100,
+            max: 2000,
             slide: function (event, ui) {
-                if (ui.values[1] === MAX_RANGE[1]) {
-                    $("#range").val(ui.values[0] + "km - >" + (ui.values[1] - 1) + "km");
-                    newRange = [ui.values[0], ui.values[1]];
-                } else {
-                    $("#range").val(ui.values[0] + "km - " + ui.values[1] + "km");
-                    newRange = [ui.values[0], ui.values[1]];
-                }
+                $("#range").val(ui.value+"m");
             }
         });
 
-        $("#range").val($("#slider-range").slider("values", 0) +
-            "km - " + $("#slider-range").slider("values", 1) + "km");
-
-        $('select').on('change', function () {
-            newDifficulty = this.value;
-        });
+        $("#range").val($("#slider").slider("value") + "m");
 
         $('body').on('click', '#saveConfigButton', function (event) {
             event.preventDefault();
-            config.saveConfig(newRange, newDifficulty);
+            config.saveConfig(newRange);
         });
     },
 
     /**
      * This function saves the configuration
+     * @param newVerifyDistance  the new maxiamal verify distance
      */
-    saveConfig: function (newRange, newDifficulty) {
-        range = newRange;
-        difficulty = newDifficulty;
+    saveConfig: function (newVerifyDistance) {
+        verifyDistance = newVerifyDistance;
     },
 
     /**

@@ -2,6 +2,23 @@ body {
     overflow: hidden; /* Never scroll */
 }
 
+.hint {
+    background-color: #5bc0de;
+    border: solid 1px white;
+    border-radius: 3px;
+    display: inline;
+    float: left;
+
+}
+
+.statusPuzzle {
+    font-weight: bold;
+    background-color: white;
+    color: red;
+    display: inline;
+    float: right;
+}
+
 main > section {
     text-align: left;
 }

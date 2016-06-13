@@ -1,11 +1,11 @@
 $(document).ready(function () {
-    openLoginScreen();
     addListeners();
+    if(localStorage.getItem("token") !== null){
+        openGameScreen();
+    } else{
+        openLoginScreen();
+    }
 
-    window.navigator.geolocation.getCurrentPosition(function (aPosition) {
-        console.log(aPosition);
-        position = aPosition;
-    })
 });
 
 ///////////////////////////////////////////
@@ -13,8 +13,6 @@ $(document).ready(function () {
 ///////////////////////////////////////////
 
 var name = null;
-var currentToken = null;
-var position = null;
 
 //////////////////////////////////////
 // Here all the screens get defined //
@@ -35,14 +33,8 @@ function openLoginScreen() {
 function openGameScreen() {
     eraseScreen();
     game.createAndAppendGameView();
-    game.getPointsOfActualGame();
-    var loadedPictures = game.loadPictures();
-    if (loadedPictures !== null) {
-        game.appendPictureAndIndicatorNodesInCarousel(loadedPictures);
-    } else {
-        //TODO where to append? :(
-        createAndAppendErrorMessage("main", "could not load game!");
-    }
+    game.loadPictures();
+    game.getUserPoints();
 }
 
 /**
@@ -125,18 +117,71 @@ function removeErrorMessages() {
  */
 function setLoggedInUser(aName, aCurrentToken) {
     name = aName;
-    currentToken = aCurrentToken;
-    console.log("Login successful: " + name + ", " + currentToken);
+    localStorage.setItem("token", aCurrentToken);
+    console.log("Login successful: " + name + ", " +  localStorage.getItem("token"));
 }
 
 //TODO: Getters for name, token and position?
 /**
- * returns a JSON object with the login data
- * @returns {{name: *, token: *}}
+ * returns the token
+ * @returns token from the local storage
  */
-function getLoginJSON() {
-    return {
-        'name': name,
-        'token': currentToken
-    };
+function getCurrentToken() {
+    return localStorage.getItem("token");
+}
+
+/**
+ * getter for the name
+ * @returns string of the name
+ */
+function getUserName() {
+    return name;
+}
+
+
+/**
+ * proceeds the ajax calls for the Game screen
+ * @param url       the url where the request gets sent to
+ * @param request   the data to send
+ * @param type      the HTML type like GET or POST
+ */
+function sendAjaxCallG(url, request, type) {
+    $.ajax({
+        url: "api/" + url,
+        data: request,
+        dataType: "json",
+        type: type,
+        success: function (answer) {
+            handleAjaxAnswer(url, answer);
+        },
+        error: function () {
+        }
+    });
+}
+
+
+/**
+ * proceeds the ajax calls for the Login screen
+ * @param url       the url where the request gets sent to
+ * @param request   the data to send
+ * @param type      type of the ajax e.g. GET or POST
+ */
+function sendAjaxCallL(url, request, type) {
+    var currentToken;
+    $.ajax({
+        url: "api/" + url,
+        data: JSON.stringify(request),
+        dataType: "json",
+        type: type,
+        success: function (answer) {
+            if (answer.hasOwnProperty('message')) {
+                createAndAppendErrorMessage($("main"), answer.message);
+            } else {
+                setLoggedInUser(answer.name, answer.currenttoken);
+                openMainScreen();
+            }
+        },
+        error: function () {
+        }
+    });
 }
