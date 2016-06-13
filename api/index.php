@@ -3,17 +3,6 @@
 	\Slim\Slim::registerAutoloader();
 
 	$app = new \Slim\Slim();
-	$app->add(new \Slim\Middleware\SessionCookie(array(
-		'expires' => '20 minutes',
-		'path' => '/',
-		'domain' => null,
-		'secure' => false,
-		'httponly' => false,
-		'name' => 'slim_session',
-		'secret' => 'CHANGE_ME',
-		'cipher' => MCRYPT_RIJNDAEL_256,
-		'cipher_mode' => MCRYPT_MODE_CBC
-	)));
 	
 	define("nPuzzles", 10);
 	define("maxTime", 10080); //in minutes
@@ -48,7 +37,8 @@
 		}
 		
 		//get user
-        $selection = $db->prepare('SELECT * FROM user WHERE CurrentToken = \''.$token.'\'');
+        $selection = $db->prepare('SELECT * FROM user WHERE CurrentToken = :token');
+		$selection->bindParam(':token', $token);
 		$success = $selection->execute();
 		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
 		if(sizeof($results) == 1) {
@@ -56,11 +46,37 @@
 			return $user;
 		} else {
 			$errorjson = array();
-			$errorjson["message"] = "Please login again.";
+			$errorjson["message"] = "Invalid token";
 			echo json_encode($errorjson);
 			die();
 		}
 	}
+	
+	$app->get('/userpoints', function() use($app){
+        $token = $app->request()->params('token');
+        $db = getDBConnection('mysql:host='.HOST.';dbname='.DBNAME, USER, PWD);
+		$user = getUser($token, $db);
+
+		$points = 0;
+		$selection = $db->prepare('SELECT * FROM playround WHERE userid = :userid');
+		$selection->bindParam(':userid', $user['ID']);
+		$success = $selection->execute();
+		$userplayrounds = $selection->fetchAll(PDO::FETCH_ASSOC);
+		foreach($userplayrounds as $index => $playround) {
+			$selection = $db->prepare('SELECT * FROM puzzle WHERE playroundid = :playroundid');
+			$selection->bindParam(':playroundid', $playround['ID']);
+			$success = $selection->execute();
+			$puzzles = $selection->fetchAll(PDO::FETCH_ASSOC);
+			foreach($puzzles as $index => $puzzle) {
+				$points += $puzzle["points"];
+			}
+		}
+		
+		$resultjson = array();
+		$resultjson["name"] = $user["Name"];
+		$resultjson["points"] = $points;
+		echo json_encode($resultjson);
+	});
 	
 	$app->get('/config', function() use($app){
         $token = $app->request()->params('token');
@@ -88,7 +104,8 @@
 		$db = getDBConnection('mysql:host='.HOST.';dbname='.DBNAME, USER, PWD);
 		$user = getUser($token, $db);
 
-		$insertion = $db->prepare('UPDATE user SET tolerance = :tolerance WHERE ID = \''.$user['ID'].'\'');
+		$insertion = $db->prepare('UPDATE user SET tolerance = :tolerance WHERE ID = :userid');
+		$insertion->bindParam(':userid', $user['ID']);
 		$insertion->bindParam(':tolerance', $request["tolerance"]);
 		
 		$success = $insertion->execute();
@@ -112,7 +129,8 @@
 
 		$user = getUser($token, $db);
 
-		$selection = $db->prepare('SELECT * FROM playround WHERE userid = '.$user['ID'].' AND Finished = 0');
+		$selection = $db->prepare('SELECT * FROM playround WHERE userid = :userid AND Finished = 0');
+		$selection->bindParam(':userid', $user['ID']);
 		$success = $selection->execute();
 		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
 		if(sizeof($results) > 0) {
@@ -137,7 +155,8 @@
 				die();
 			} 
 			
-			$selection = $db->prepare('SELECT * FROM playround WHERE userid = '.$user['ID'].' AND Finished = 0');
+			$selection = $db->prepare('SELECT * FROM playround WHERE userid = :userid AND Finished = 0');
+			$selection->bindParam(':userid', $user['ID']);
 			$success = $selection->execute();
 			$results = $selection->fetchAll(PDO::FETCH_ASSOC);
 			$playround = $results[0];
@@ -173,13 +192,15 @@
 			}
 			
 		}
-		$selection = $db->prepare('SELECT * FROM puzzle WHERE playroundid = '.$playround['ID']);
+		$selection = $db->prepare('SELECT * FROM puzzle WHERE playroundid = :playroundid');
+		$selection->bindParam(':playroundid', $playround['ID']);
 		$success = $selection->execute();
 		$puzzles = $selection->fetchAll(PDO::FETCH_ASSOC);
 
 		$puzzlesWithLocation = array();
 		foreach($puzzles as $index => $row) {
-			$selection = $db->prepare('SELECT * FROM location WHERE id = '.$row['LocationID']);
+			$selection = $db->prepare('SELECT * FROM location WHERE id = :locationid');
+			$selection->bindParam(':locationid', $row['LocationID']);
 			$success = $selection->execute();
 			$results = $selection->fetchAll(PDO::FETCH_ASSOC);
 			$row["location"] = $results[0]; // ID, Source, Hint, Latitude, Longitude
@@ -204,11 +225,13 @@
 		$users = $selection->fetchAll(PDO::FETCH_ASSOC);
 		foreach($users as $index => $user) {
 			$highscore[$user["Name"]] = 0;
-			$selection = $db->prepare('SELECT * FROM playround WHERE userid = '.$user['ID']);
+			$selection = $db->prepare('SELECT * FROM playround WHERE userid = :userid');
+			$selection->bindParam(':userid', $user['ID']);
 			$success = $selection->execute();
 			$userplayrounds = $selection->fetchAll(PDO::FETCH_ASSOC);
 			foreach($userplayrounds as $index => $playround) {
-				$selection = $db->prepare('SELECT * FROM puzzle WHERE playroundid = '.$playround['ID']);
+				$selection = $db->prepare('SELECT * FROM puzzle WHERE playroundid = :playroundid');
+				$selection->bindParam(':playroundid', $playround['ID']);
 				$success = $selection->execute();
 				$puzzles = $selection->fetchAll(PDO::FETCH_ASSOC);
 				foreach($puzzles as $index => $puzzle) {
@@ -244,7 +267,10 @@
 		
 		$db = getDBConnection('mysql:host='.HOST.';dbname='.DBNAME, USER, PWD);
 		
-		$selection = $db->prepare('SELECT * FROM user WHERE Name = \''.$request['name'].'\' AND Password = \''.$request['password'].'\'');
+		$password = sha1($request['password']);
+		$selection = $db->prepare('SELECT * FROM user WHERE Name = :name AND Password = :password');
+		$selection->bindParam(':name', $request['name']);
+		$selection->bindParam(':password', $password);
 		$success = $selection->execute();
 		$users = $selection->fetchAll(PDO::FETCH_ASSOC);
 		
@@ -254,7 +280,8 @@
 			echo json_encode($errorjson);
 		} else {
 			//return user with new token
-			$insertion = $db->prepare('UPDATE user SET CurrentToken = :currenttoken WHERE Name = \''.$request['name'].'\'');
+			$insertion = $db->prepare('UPDATE user SET CurrentToken = :currenttoken WHERE Name = :name');
+			$insertion->bindParam(':name', $request['name']);
 			$insertion->bindParam(':currenttoken', $currenttoken);
 			$currenttoken = createToken();
 			
@@ -280,8 +307,9 @@
 		$db = getDBConnection('mysql:host='.HOST.';dbname='.DBNAME, USER, PWD);
 		$user = getUser($token, $db);
 		
-		$insertion = $db->prepare('UPDATE user SET CurrentToken = :currenttoken WHERE ID = \''.$user['ID'].'\'');
+		$insertion = $db->prepare('UPDATE user SET CurrentToken = :currenttoken WHERE ID = :userid');
 		$insertion->bindParam(':currenttoken', $currenttoken);
+		$insertion->bindParam(':userid', $user['ID']);
 		$currenttoken = "";
 		
 		$success = $insertion->execute();
@@ -309,7 +337,8 @@
 		
 		$db = getDBConnection('mysql:host='.HOST.';dbname='.DBNAME, USER, PWD);
 
-		$selection = $db->prepare('SELECT * FROM user WHERE Name = \''.$request['name'].'\'');
+		$selection = $db->prepare('SELECT * FROM user WHERE Name = :name');
+		$selection->bindParam(':name', $request["name"]);
 		$success = $selection->execute();
 		$users = $selection->fetchAll(PDO::FETCH_ASSOC);
 
@@ -325,7 +354,7 @@
 			$insertion->bindParam(':password', $password);
 			$insertion->bindParam(':currenttoken', $currenttoken);
 			$name = $request["name"];
-			$password = $request["password"];
+			$password = sha1($request["password"]);
 			$currenttoken = createToken();
 
 			$success = $insertion->execute();
@@ -388,18 +417,21 @@
 		$user = getUser($token, $db);
 
 		//getpuzzle with puzzleid
-		$selection = $db->prepare('SELECT * FROM puzzle WHERE id = \''.$request["puzzleid"].'\'');
+		$selection = $db->prepare('SELECT * FROM puzzle WHERE id = :puzzleid');
+		$selection->bindParam(':puzzleid', $request["puzzleid"]);
 		$success = $selection->execute();
 		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
 		$puzzle = $results[0];
 		
 		//own playround?
-		$selection = $db->prepare('SELECT * FROM playround WHERE id = \''.$puzzle["PlayRoundID"].'\'');
+		$selection = $db->prepare('SELECT * FROM playround WHERE id = :playroundid');
+		$selection->bindParam(':playroundid', $puzzle["PlayRoundID"]);
 		$success = $selection->execute();
 		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
 		$playround = $results[0];
 		
-		$selection = $db->prepare('SELECT * FROM user WHERE id = \''.$playround["UserID"].'\'');
+		$selection = $db->prepare('SELECT * FROM user WHERE id = :userid');
+		$selection->bindParam(':userid', $playround["UserID"]);
 		$success = $selection->execute();
 		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
 		$puzzleuser = $results[0];
@@ -420,7 +452,8 @@
 		}
 		
 		//correct location?
-		$selection = $db->prepare('SELECT * FROM location WHERE ID = \''.$puzzle["LocationID"].'\'');
+		$selection = $db->prepare('SELECT * FROM location WHERE ID = :locationid');
+		$selection->bindParam(':locationid', $puzzle["LocationID"]);
 		$success = $selection->execute();
 		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
 		$location = $results[0];
@@ -454,7 +487,8 @@
 		$points = $timepoints + $hintpoints + basicpoints;
 		
 		//set done (flag & date) and points
-		$insertion = $db->prepare('UPDATE puzzle SET done = 1, solved = 1, Enddate = :enddate, points = :points WHERE ID = \''.$puzzle['ID'].'\'');
+		$insertion = $db->prepare('UPDATE puzzle SET done = 1, solved = 1, Enddate = :enddate, points = :points WHERE ID = :puzzleid');
+		$insertion->bindParam(':puzzleid', $puzzle['ID']);
 		$insertion->bindParam(':enddate', $enddate);
 		$insertion->bindParam(':points', $points);
 		
@@ -462,7 +496,8 @@
 		
 		if($success) {
 			//getallpuzzleofplayround
-			$selection = $db->prepare('SELECT * FROM puzzle WHERE PlayRoundID = \''.$playround["ID"].'\'');
+			$selection = $db->prepare('SELECT * FROM puzzle WHERE PlayRoundID = :playroundid');
+			$selection->bindParam(':playroundid', $playround["ID"]);
 			$success = $selection->execute();
 			$puzzles = $selection->fetchAll(PDO::FETCH_ASSOC);
 			//alldone?
@@ -474,7 +509,8 @@
 			}
 			if($alldone) {
 				//set playround finished
-				$insertion = $db->prepare('UPDATE playround SET Finished = 1 WHERE ID = \''.$playround['ID'].'\'');				
+				$insertion = $db->prepare('UPDATE playround SET Finished = 1 WHERE ID = :playroundid');	
+				$insertion->bindParam(':playroundid', $playround['ID']);				
 				$success = $insertion->execute();
 				
 				if($success) {
@@ -514,18 +550,21 @@
 		$user = getUser($token, $db);
 
 		//getpuzzle with puzzleid
-		$selection = $db->prepare('SELECT * FROM puzzle WHERE id = \''.$request["puzzleid"].'\'');
+		$selection = $db->prepare('SELECT * FROM puzzle WHERE id = :puzzleid');
+		$selection->bindParam(':puzzleid', $request["puzzleid"]);
 		$success = $selection->execute();
 		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
 		$puzzle = $results[0];
 		
 		//own playround?
-		$selection = $db->prepare('SELECT * FROM playround WHERE id = \''.$puzzle["PlayRoundID"].'\'');
+		$selection = $db->prepare('SELECT * FROM playround WHERE id = :playroundid');
+		$selection->bindParam(':playroundid', $puzzle["PlayRoundID"]);
 		$success = $selection->execute();
 		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
 		$playround = $results[0];
 		
-		$selection = $db->prepare('SELECT * FROM user WHERE id = \''.$playround["UserID"].'\'');
+		$selection = $db->prepare('SELECT * FROM user WHERE id = :userid');
+		$selection->bindParam(':userid', $playround["UserID"]);
 		$success = $selection->execute();
 		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
 		$puzzleuser = $results[0];
@@ -567,7 +606,8 @@
 		$points = $hintpoints;
 		
 		//set done (flag & date) and points
-		$insertion = $db->prepare('UPDATE puzzle SET done = 1, Enddate = :enddate, points = :points WHERE ID = \''.$puzzle['ID'].'\'');
+		$insertion = $db->prepare('UPDATE puzzle SET done = 1, Enddate = :enddate, points = :points WHERE ID = :puzzleid');
+		$insertion->bindParam(':puzzleid', $puzzle['ID']);
 		$insertion->bindParam(':enddate', $enddate);
 		$insertion->bindParam(':points', $points);
 		
@@ -575,7 +615,8 @@
 		
 		if($success) {
 			//getallpuzzleofplayround
-			$selection = $db->prepare('SELECT * FROM puzzle WHERE PlayRoundID = \''.$playround["ID"].'\'');
+			$selection = $db->prepare('SELECT * FROM puzzle WHERE PlayRoundID = :playroundid');
+			$selection->bindParam(':playroundid', $playround["ID"]);
 			$success = $selection->execute();
 			$puzzles = $selection->fetchAll(PDO::FETCH_ASSOC);
 			//alldone?
@@ -587,7 +628,8 @@
 			}
 			if($alldone) {
 				//set playround finished
-				$insertion = $db->prepare('UPDATE playround SET Finished = 1 WHERE ID = \''.$playround['ID'].'\'');				
+				$insertion = $db->prepare('UPDATE playround SET Finished = 1 WHERE ID = :playroundid');	
+				$insertion->bindParam(':playroundid', $playround["ID"]);				
 				$success = $insertion->execute();
 				
 				if($success) {
@@ -628,18 +670,21 @@
 		}
 		
 		//get puzzle with puzzleid
-		$selection = $db->prepare('SELECT * FROM puzzle WHERE id = \''.$request["puzzleid"].'\'');
+		$selection = $db->prepare('SELECT * FROM puzzle WHERE id = :puzzleid');
+		$selection->bindParam(':puzzleid', $request["puzzleid"]);
 		$success = $selection->execute();
 		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
 		$puzzle = $results[0];
 		
 		//own playround?
-		$selection = $db->prepare('SELECT * FROM playround WHERE id = \''.$puzzle["PlayRoundID"].'\'');
+		$selection = $db->prepare('SELECT * FROM playround WHERE id = :playroundid');
+		$selection->bindParam(':playroundid', $puzzle["PlayRoundID"]);
 		$success = $selection->execute();
 		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
 		$playround = $results[0];
 		
-		$selection = $db->prepare('SELECT * FROM user WHERE id = \''.$playround["UserID"].'\'');
+		$selection = $db->prepare('SELECT * FROM user WHERE id = :userid');
+		$selection->bindParam(':userid', $playround["UserID"]);
 		$success = $selection->execute();
 		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
 		$puzzleuser = $results[0];
@@ -660,12 +705,14 @@
 		}
 		
 		//set hint = 1
-		$insertion = $db->prepare('UPDATE puzzle SET hintused = 1 WHERE ID = \''.$puzzle['ID'].'\'');
+		$insertion = $db->prepare('UPDATE puzzle SET hintused = 1 WHERE ID = :puzzleid');
+		$insertion->bindParam(':puzzleid', $puzzle['ID']);
 		
 		$success = $insertion->execute();
 		
 		if($success) {
-			$selection = $db->prepare('SELECT * FROM location WHERE id = \''.$puzzle["LocationID"].'\'');
+			$selection = $db->prepare('SELECT * FROM location WHERE id = :locationid');
+			$selection->bindParam(':locationid', $puzzle["LocationID"]);
 			$success = $selection->execute();
 			$results = $selection->fetchAll(PDO::FETCH_ASSOC);
 			$location = $results[0];
