@@ -662,7 +662,7 @@
 		
 		$user = getUser($request["token"], $db);
 		
-		if(!$request["puzzleid"]) {
+		if(!isset($request["puzzleid"])) {
 			$errorjson = array();
 			$errorjson["message"] = "Param 'puzzleid' invalid.";
 			echo json_encode($errorjson);
