@@ -27,14 +27,15 @@ var config = {
      * Intializes the settings which are stored in this js
      */
     intializeSettings: function () {
-        var newRange = range;
+        var newVerifyDistance = verifyDistance;
         $("#slider").slider({
             range: "min",
-            value: verifyDistance,
+            value: newVerifyDistance,
             min: 100,
             max: 2000,
             slide: function (event, ui) {
                 $("#range").val(ui.value+"m");
+                newVerifyDistance = ui.value;
             }
         });
 
@@ -42,7 +43,7 @@ var config = {
 
         $('body').on('click', '#saveConfigButton', function (event) {
             event.preventDefault();
-            config.saveConfig(newRange);
+            config.saveConfig(newVerifyDistance);
         });
     },
 

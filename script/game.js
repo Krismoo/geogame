@@ -64,7 +64,7 @@ var game = {
             'puzzleid': getActualPuzzleId(),
             'token': getCurrentToken()
         };
-        sendAjaxCallG("usehint", request, "POST");
+        sendAjaxCallG("usehint", JSON.stringify(request), "POST");
     },
 
     /**
@@ -80,13 +80,13 @@ var game = {
      */
     verifyLocation: function () {
         window.navigator.geolocation.getCurrentPosition(function (currentPosition) {
-            console.log(currentPosition);
             var request = {
+                'token': getCurrentToken(),
                 'puzzleid': getActualPuzzleId(),
                 'latitude': currentPosition.coords.latitude,
                 'longitude': currentPosition.coords.longitude
             };
-            sendAjaxCallG("verifylocation", request, "POST");
+            sendAjaxCallG("verifylocation", JSON.stringify(request), "POST");
         });
 
     },
@@ -99,7 +99,7 @@ var game = {
             "token": getCurrentToken(),
             "puzzleid": getActualPuzzleId(),
         };
-        sendAjaxCallG("skippicture", request, "POST");
+        sendAjaxCallG("skippicture", JSON.stringify(request), "POST");
     }
 };
 
@@ -113,6 +113,7 @@ var game = {
  * @param answer    the answer to compute
  */
 function handleAjaxAnswer(requestUrl, answer) {
+    console.log(answer);
     switch (requestUrl) {
         case "usehint":
             $("#" + answer.puzzleId).find(".hint").text(answer.hint);
@@ -122,6 +123,10 @@ function handleAjaxAnswer(requestUrl, answer) {
             break;
         case "pictures":
             appendPictureAndIndicatorNodesInCarousel(answer);
+            break;
+        case "verify":
+
+            game.getUserPoints();
             break;
         default:
             break;
@@ -133,7 +138,6 @@ function handleAjaxAnswer(requestUrl, answer) {
  * @param pictures  the data for the pictures
  */
 function appendPictureAndIndicatorNodesInCarousel(pictures) {
-    console.log(pictures);
     var pictureNodes = "";
     var indicatorNodes = "";
     for (var i = 0; i < pictures.length; i++) {
@@ -152,10 +156,6 @@ function appendPictureAndIndicatorNodesInCarousel(pictures) {
     activePicture.addClass("active item-active");
     puzzleId = activePicture.attr('id');
     $("li").first().addClass("active");
-    $('.carousel').carousel({interval: false});
-    $(document).on('mouseleave', '.carousel', function() {
-        $(this).carousel('pause');
-    });
 }
 
 function getActualPuzzleId() {
