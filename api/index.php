@@ -526,6 +526,7 @@
 			} else {
 				$resultjson = array();
 				$resultjson["message"] = "Puzzle solved.";
+				$resultjson["reload"] = 0;
 				echo json_encode($resultjson);
 			}
 				
@@ -646,6 +647,7 @@
 			} else {
 				$resultjson = array();
 				$resultjson["message"] = "Puzzle uebersprungen.";
+				$resultjson["reload"] = 0;
 				echo json_encode($resultjson);
 			}
 				
@@ -721,6 +723,7 @@
 			
 			$returnjson = array();
 			$returnjson["hint"] = $location["Hint"];
+			$returnjson["puzzleid"] = $request["puzzleid"]
 			echo json_encode($returnjson);
 		} else {
 			$errorjson = array();
