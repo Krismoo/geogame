@@ -19,7 +19,6 @@
 	define("maxTime", 10080); //in minutes
 	define("hintpenalty", 3000);
 	define("basicpoints", 500);
-	define("validRadius", 1000); //in meter
 	
 	function getDBConnection($connectionString, $user, $pwd) {
 		try {
@@ -62,6 +61,49 @@
 			die();
 		}
 	}
+	
+	$app->get('/config', function() use($app){
+        $token = $app->request()->params('token');
+		
+        $db = getDBConnection('mysql:host='.HOST.';dbname='.DBNAME, USER, PWD);
+
+		$user = getUser($token, $db);
+
+		$resultjson = array();
+		$resultjson["tolerance"] = $user["tolerance"];
+		echo json_encode($resultjson);
+	});
+	
+	$app->post('/config', function() use ($app) {
+		$request = json_decode($app->request->getBody(),true);
+		
+		if(!isset($request["tolerance"]) || $request["tolerance"] < 100 || $request["tolerance"] > 1000) {
+			$errorjson = array();
+			$errorjson["message"] = "Param 'tolerance' invalid";
+			echo json_encode($errorjson);
+			die();
+		}
+		
+		$token = $request["token"];
+		$db = getDBConnection('mysql:host='.HOST.';dbname='.DBNAME, USER, PWD);
+		$user = getUser($token, $db);
+
+		$insertion = $db->prepare('UPDATE user SET tolerance = :tolerance WHERE ID = \''.$user['ID'].'\'');
+		$insertion->bindParam(':tolerance', $request["tolerance"]);
+		
+		$success = $insertion->execute();
+		
+		if($success) {
+			$returnjson = array();
+			$returnjson["message"] = "Tolerance set to ".$request['tolerance'].".";
+			echo json_encode($returnjson);
+		} else {
+			$errorjson = array();
+			$errorjson["message"] = "Tolerance could not be set.";
+			echo json_encode($errorjson);
+		}
+		
+	});
 	
 	$app->get('/pictures', function() use($app){
         $token = $app->request()->params('token');
@@ -231,6 +273,30 @@
 		}
 	});
 
+	$app->post('/logout', function() use ($app) {
+		$request = json_decode($app->request->getBody(),true);
+		
+		$token = $request["token"];
+		$db = getDBConnection('mysql:host='.HOST.';dbname='.DBNAME, USER, PWD);
+		$user = getUser($token, $db);
+		
+		$insertion = $db->prepare('UPDATE user SET CurrentToken = :currenttoken WHERE ID = \''.$user['ID'].'\'');
+		$insertion->bindParam(':currenttoken', $currenttoken);
+		$currenttoken = "";
+		
+		$success = $insertion->execute();
+		
+		if($success) {
+			$returnjson = array();
+			$returnjson["message"] = "Successfully logged out.";
+			echo json_encode($returnjson);
+		} else {
+			$errorjson = array();
+			$errorjson["message"] = "User ".$user['Name']." could not logout.";
+			echo json_encode($errorjson);
+		}
+	});
+	
 	$app->post('/register', function() use ($app) {
 		$request = json_decode($app->request->getBody(),true);
 
@@ -287,8 +353,8 @@
 		return $randomString;
 	}
 
-	function nearEnough($lat, $long, $location) {
-		return haversineGreatCircleDistance($lat, $long, $location["Latitude"], $location["Longitude"]) < validRadius;
+	function nearEnough($lat, $long, $location, $tolerance) {
+		return haversineGreatCircleDistance($lat, $long, $location["Latitude"], $location["Longitude"]) < $tolerance;
 	}
 	
 	//http://stackoverflow.com/questions/10053358/measuring-the-distance-between-two-coordinates-in-php
@@ -359,7 +425,7 @@
 		$results = $selection->fetchAll(PDO::FETCH_ASSOC);
 		$location = $results[0];
 		
-		if(!nearEnough($request["latitude"], $request["longitude"], $location)) {
+		if(!nearEnough($request["latitude"], $request["longitude"], $location, $user["tolerance"])) {
 			$errorjson = array();
 			$errorjson["message"] = "Your position is not near enough. Would you like to use a hint?";
 			echo json_encode($errorjson);
