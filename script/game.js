@@ -58,7 +58,15 @@ var game = {
      */
     loadPictures: function () {
         var request = {"token": getCurrentToken()};
-        sendAjaxCallG("pictures", request, "GET");
+        $.ajax({
+            url: "api/pictures",
+            data: request,
+            dataType: "json",
+            type: "GET",
+            success: function (answer) {
+                appendPictureAndIndicatorNodesInCarousel(answer);
+            }
+        });
     },
 
     /**
@@ -69,7 +77,15 @@ var game = {
             'puzzleid': getActualPuzzleId(),
             'token': getCurrentToken()
         };
-        sendAjaxCallG("usehint", JSON.stringify(request), "POST");
+        $.ajax({
+            url: "api/usehint",
+            data: JSON.stringify(request),
+            dataType: "json",
+            type: "POST",
+            success: function (answer) {
+                $("#" + answer.puzzleid).find(".carousel-caption").last().append("<p class='hint'>" + answer.hint + "</p>");
+            }
+        });
     },
 
     /**
@@ -77,7 +93,15 @@ var game = {
      */
     getUserPoints: function () {
         var request = {'token': getCurrentToken()};
-        sendAjaxCallG("userpoints", request, "GET");
+        $.ajax({
+            url: "api/userpoints",
+            data: request,
+            dataType: "json",
+            type: "GET",
+            success: function (answer) {
+                $("#points").empty().text("Punkte: " + answer.points);
+            }
+        });
     },
 
     /**
@@ -91,7 +115,23 @@ var game = {
                 'latitude': currentPosition.coords.latitude,
                 'longitude': currentPosition.coords.longitude
             };
-            sendAjaxCallG("verifylocation", JSON.stringify(request), "POST");
+
+            $.ajax({
+                url: "api/verifylocation",
+                data: JSON.stringify(request),
+                dataType: "json",
+                type: "POST",
+                success: function (answer) {
+                    showGamePopup(answer.message);
+                    if (answer.message === "Puzzle solved.") {
+                        $("#" + answer.puzzleid).find(".carousel-caption").prepend("<p class='statusPuzzle'>ÜBERSPRUNGEN</p>");
+                    }
+                    if (answer.solved === 1) {
+                        game.loadPictures();
+                    }
+                    game.getUserPoints();
+                }
+            });
         });
 
     },
@@ -104,7 +144,17 @@ var game = {
             "token": getCurrentToken(),
             "puzzleid": getActualPuzzleId(),
         };
-        sendAjaxCallG("skippicture", JSON.stringify(request), "POST");
+        $.ajax({
+            url: "api/skippicture",
+            data: JSON.stringify(request),
+            dataType: "json",
+            type: "POST",
+            success: function (answer) {
+                $("#" + answer.puzzleid).find(".carousel-caption").prepend("<p class='statusPuzzle'>ÜBERSPRUNGEN</p>");
+            }
+        });
+
+
     },
 
     /**
@@ -120,44 +170,6 @@ var game = {
 ///////////////////////////////////////////////////////////////////////////////////
 // Here the functions used by several (other) functions in this file get defined //
 ///////////////////////////////////////////////////////////////////////////////////
-
-/**
- * This function handles the ajax answers
- * @param requestUrl   from which url the answer is from
- * @param answer    the answer to compute
- */
-function handleAjaxAnswer(requestUrl, answer) {
-    console.log(answer);
-    switch (requestUrl) {
-        case "usehint":
-            $("#" + answer.puzzleid).find(".carousel-caption").last().append("<p class='hint'>" + answer.hint + "</p>");
-            break;
-        case "userpoints":
-            $("#points").empty().text("Punkte: " + answer.points);
-            break;
-        case "pictures":
-            appendPictureAndIndicatorNodesInCarousel(answer);
-            break;
-        case "verifylocation":
-            showGamePopup(answer.message);
-            if (answer.message === "Puzzle solved.") {
-                $("#" + answer.puzzleid).find(".carousel-caption").prepend("<p class='statusPuzzle'>ÜBERSPRUNGEN</p>")
-            }
-            if (answer.solved === 1) {
-                game.loadPictures();
-            }
-            game.getUserPoints();
-            break;
-        case "skippicture":
-            console.log("fjwnvbipn: " + answer.puzzleid);
-            $("#" + answer.puzzleid).find(".carousel-caption").prepend("<p class='statusPuzzle'>ÜBERSPRUNGEN</p>")
-
-            break;
-        default:
-            break;
-    }
-}
-
 /**
  * Creates the Picture and indicator nodes and appends them into the Carousel
  * @param pictures  the data for the pictures
