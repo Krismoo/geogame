@@ -61,8 +61,8 @@ var game = {
      */
     giveAHint: function () {
         var request = {
-            "puzzleid": getActualPuzzleId(),
-            "token": getCurrentToken()
+            'puzzleid': getActualPuzzleId(),
+            'token': getCurrentToken()
         };
         sendAjaxCallG("usehint", request, "POST");
     },
@@ -82,9 +82,9 @@ var game = {
         window.navigator.geolocation.getCurrentPosition(function (currentPosition) {
             console.log(currentPosition);
             var request = {
-                "puzzleid": getActualPuzzleId(),
-                "latitude": currentPosition.coords.latitude,
-                "longitude": currentPosition.coords.longitude
+                'puzzleid': getActualPuzzleId(),
+                'latitude': currentPosition.coords.latitude,
+                'longitude': currentPosition.coords.longitude
             };
             sendAjaxCallG("verifylocation", request, "POST");
         });
@@ -152,8 +152,12 @@ function appendPictureAndIndicatorNodesInCarousel(pictures) {
     activePicture.addClass("active item-active");
     puzzleId = activePicture.attr('id');
     $("li").first().addClass("active");
+    $('.carousel').carousel({interval: false});
+    $(document).on('mouseleave', '.carousel', function() {
+        $(this).carousel('pause');
+    });
 }
 
 function getActualPuzzleId() {
-    return $("carousel-inner").find(".active");
+    return $(".carousel-inner").find(".active").attr('id');
 }
