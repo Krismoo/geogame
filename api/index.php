@@ -42,7 +42,7 @@
 		if(!$token) {
 			//$token null or empty
 			$errorjson = array();
-			$errorjson["message"] = "Fuer weitere Anfragen bitte einloggen.";
+			$errorjson["message"] = "F&uuml;r weitere Anfragen bitte einloggen.";
 			echo json_encode($errorjson);
 			die();
 		}
@@ -57,7 +57,7 @@
 			return $user;
 		} else {
 			$errorjson = array();
-			$errorjson["message"] = "Ungueltiges Token";
+			$errorjson["message"] = "Ung&uml;ltiges Token";
 			echo json_encode($errorjson);
 			die();
 		}
@@ -131,7 +131,7 @@
 		//valid tolerance parameter
 		if(!isset($request["tolerance"]) || $request["tolerance"] < 100 || $request["tolerance"] > 1000) {
 			$errorjson = array();
-			$errorjson["message"] = "Parameter 'tolerance' ungueltig";
+			$errorjson["message"] = "Parameter 'tolerance' ung&uuml;ltig";
 			echo json_encode($errorjson);
 			die();
 		}
@@ -227,7 +227,7 @@
 				} else {
 					//DB-Exception
 					$errorjson = array();
-					$errorjson["message"] = "Spielrunde (ID=".$playroundid.") konnte nicht wieder gelöscht werden.";
+					$errorjson["message"] = "Spielrunde (ID=".$playroundid.") konnte nicht wieder gel&ouml;scht werden.";
 					echo json_encode($errorjson);
 					die();
 				}
@@ -350,7 +350,7 @@
 		//validate name/password parameters
 		if(!$request["name"] || !$request["password"]) {
 			$errorjson = array();
-			$errorjson["message"] = "Parameter 'name' oder 'password' ungueltig.";
+			$errorjson["message"] = "Parameter 'name' oder 'password' ung&uuml;ltig.";
 			echo json_encode($errorjson);
 			die();
 		}
@@ -370,7 +370,7 @@
 		if(sizeof($users) != 1) {
 			//invalid login parameters
 			$errorjson = array();
-			$errorjson["message"] = "Falsches Passwort für User ".$request['name'].".";
+			$errorjson["message"] = "Falsches Passwort f&uuml;r User ".$request['name'].".";
 			echo json_encode($errorjson);
 		} else {
 			//return user with new token
@@ -442,7 +442,7 @@
 		//validate name/password parameters
 		if(!$request["name"] || !$request["password"]) {
 			$errorjson = array();
-			$errorjson["message"] = "Parameter 'name' oder 'password' ungueltig";
+			$errorjson["message"] = "Parameter 'name' oder 'password' ung&uuml;ltig";
 			echo json_encode($errorjson);
 			die();
 		}
@@ -549,7 +549,7 @@
 		//Validate parameters
 		if(!isset($request["puzzleid"]) || !isset($request["latitude"]) || !isset($request["longitude"])) {
 			$errorjson = array();
-			$errorjson["message"] = "Parameter 'puzzleid', 'latitude' oder 'longitude' ungueltig";
+			$errorjson["message"] = "Parameter 'puzzleid', 'latitude' oder 'longitude' ung&uuml;ltig";
 			echo json_encode($errorjson);
 			die();
 		}
@@ -583,7 +583,7 @@
 		if($puzzleuser["CurrentToken"] != $request["token"]) {
 			//foreign playround
 			$errorjson = array();
-			$errorjson["message"] = "Ungueltige Operation";
+			$errorjson["message"] = "Ung&&uml;ltige Operation";
 			echo json_encode($errorjson);
 			die();
 		}
@@ -606,7 +606,7 @@
 		//calc distance
 		if(!nearEnough($request["latitude"], $request["longitude"], $location, $user["tolerance"])) {
 			$errorjson = array();
-			$errorjson["message"] = "Ihre Position ist nicht nah genug. Moechten Sie den Hinweis nutzen?";
+			$errorjson["message"] = "Ihre Position ist nicht nah genug. M&ouml;chten Sie den Hinweis nutzen?";
 			echo json_encode($errorjson);
 			die();
 		}
@@ -663,7 +663,7 @@
 				if($success) {
 					//return message/puzzleid/reload array (playround finished)
 					$resultjson = array();
-					$resultjson["message"] = "Puzzle geloest und Spielrunde beendet.";
+					$resultjson["message"] = "Puzzle gel&ouml;st und Spielrunde beendet.";
 					$resultjson["puzzleid"] = $request["puzzleid"];
 					$resultjson["reload"] = 1;
 					echo json_encode($resultjson);
@@ -676,7 +676,7 @@
 			} else {
 				//return message/puzzleid/reload array (playround not finished)
 				$resultjson = array();
-				$resultjson["message"] = "Puzzle geloest.";
+				$resultjson["message"] = "Puzzle gel&ouml;st.";
 				$resultjson["puzzleid"] = $request["puzzleid"];
 				$resultjson["reload"] = 0;
 				echo json_encode($resultjson);
@@ -685,7 +685,7 @@
 		} else {
 			//DB-Exception
 			$errorjson = array();
-			$errorjson["message"] = "Puzzle konnte nicht geloest werden.";
+			$errorjson["message"] = "Puzzle konnte nicht gel&ouml;st werden.";
 			echo json_encode($errorjson);
 		}
 	});
@@ -702,7 +702,7 @@
 		//validate parameter
 		if(!isset($request["puzzleid"])) {
 			$errorjson = array();
-			$errorjson["message"] = "Parameter 'puzzleid' ungueltig";
+			$errorjson["message"] = "Parameter 'puzzleid' ung&uuml;ltig";
 			echo json_encode($errorjson);
 			die();
 		}
@@ -736,7 +736,7 @@
 		if($puzzleuser["CurrentToken"] != $request["token"]) {
 			//foreign playround
 			$errorjson = array();
-			$errorjson["message"] = "Ungueltige Operation";
+			$errorjson["message"] = "Ung&uuml;ltige Operation";
 			echo json_encode($errorjson);
 			die();
 		}
@@ -789,7 +789,7 @@
 				if($success) {
 					//return message/puzzleid/reload array (playround finished)
 					$resultjson = array();
-					$resultjson["message"] = "Puzzle uebersprungen und Spielrunde beendet";
+					$resultjson["message"] = "Puzzle &uuml;bersprungen und Spielrunde beendet";
 					$resultjson["puzzleid"] = $request["puzzleid"];
 					$resultjson["reload"] = 1;
 					echo json_encode($resultjson);
@@ -802,7 +802,7 @@
 			} else {
 				//return message/puzzleid/reload array
 				$resultjson = array();
-				$resultjson["message"] = "Puzzle uebersprungen.";
+				$resultjson["message"] = "Puzzle &uuml;bersprungen.";
 				$resultjson["puzzleid"] = $request["puzzleid"];
 				$resultjson["reload"] = 0;
 				echo json_encode($resultjson);
@@ -811,7 +811,7 @@
 		} else {
 			//DB-Exception
 			$errorjson = array();
-			$errorjson["message"] = "Puzzle konnte nicht uebersprungen werden.";
+			$errorjson["message"] = "Puzzle konnte nicht &uuml;bersprungen werden.";
 			echo json_encode($errorjson);
 		}
 		
@@ -833,7 +833,7 @@
 		//validate parameter
 		if(!isset($request["puzzleid"])) {
 			$errorjson = array();
-			$errorjson["message"] = "Parameter 'puzzleid' ungueltig.";
+			$errorjson["message"] = "Parameter 'puzzleid' ung&uuml;ltig.";
 			echo json_encode($errorjson);
 			die();
 		}
@@ -862,7 +862,7 @@
 		//compare user and playround owner
 		if($puzzleuser["CurrentToken"] != $request["token"]) {
 			$errorjson = array();
-			$errorjson["message"] = "Ungueltige Operation";
+			$errorjson["message"] = "Ung&uuml;ltige Operation";
 			echo json_encode($errorjson);
 			die();
 		}
