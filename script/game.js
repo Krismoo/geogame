@@ -46,6 +46,11 @@ var game = {
             event.preventDefault();
             openMainScreen();
         });
+
+        body.on('click', '.closeModal', function (event) {
+            event.preventDefault();
+            $("#gameModal").hide();
+        });
     },
 
     /**
@@ -100,6 +105,15 @@ var game = {
             "puzzleid": getActualPuzzleId(),
         };
         sendAjaxCallG("skippicture", JSON.stringify(request), "POST");
+    },
+
+    /**
+     * creates the Gamepopup and appends it to the background
+     */
+    createGamePopup: function () {
+        $.get("pageContent/gameModal.html", function (gameModal) {
+            $("main").append(gameModal);
+        });
     }
 };
 
@@ -116,18 +130,28 @@ function handleAjaxAnswer(requestUrl, answer) {
     console.log(answer);
     switch (requestUrl) {
         case "usehint":
-            console.log(answer.puzzleId);
-            $("#" + answer.puzzleId).find(".hint").text(answer.hint);
+            $("#" + answer.puzzleid).find(".carousel-caption").last().append("<p class='hint'>" + answer.hint + "</p>");
             break;
         case "userpoints":
-            $("#points").text("Punkte: " + answer.points);
+            $("#points").empty().text("Punkte: " + answer.points);
             break;
         case "pictures":
             appendPictureAndIndicatorNodesInCarousel(answer);
             break;
-        case "verify":
-
+        case "verifylocation":
+            showGamePopup(answer.message);
+            if (answer.message === "Puzzle solved.") {
+                $("#" + answer.puzzleid).find(".carousel-caption").prepend("<p class='statusPuzzle'>ÜBERSPRUNGEN</p>")
+            }
+            if (answer.solved === 1) {
+                game.loadPictures();
+            }
             game.getUserPoints();
+            break;
+        case "skippicture":
+            console.log("fjwnvbipn: " + answer.puzzleid);
+            $("#" + answer.puzzleid).find(".carousel-caption").prepend("<p class='statusPuzzle'>ÜBERSPRUNGEN</p>")
+
             break;
         default:
             break;
@@ -139,26 +163,50 @@ function handleAjaxAnswer(requestUrl, answer) {
  * @param pictures  the data for the pictures
  */
 function appendPictureAndIndicatorNodesInCarousel(pictures) {
-    var pictureNodes = "";
-    var indicatorNodes = "";
     for (var i = 0; i < pictures.length; i++) {
+        var pictureNode = "";
+        var indicatorNode = "";
         // http://www.w3schools.com/bootstrap/bootstrap_carousel.asp
-        pictureNodes += "<section class='item' id='" + pictures[i].ID + "'>" +
+        pictureNode = "<section class='item' id='" + pictures[i].ID + "'>" +
             "<img src='" + pictures[i].location.Source + ".jpg' alt='Picture'>" +
-            "<div class='carousel-caption'><p class='hint'></p><p class='statusPuzzle'></p>" +
-            "</div></section>";
+            "<div class='carousel-caption'></div></section>";
+        $("main").find(".carousel-inner").append(pictureNode);
 
-        indicatorNodes += "<li data-target='#myCarousel' data-slide-to='" + i + "'></li>";
+        if (pictures[i].done === "1") {
+            if (pictures[i].solved === "1") {
+                $("#" + pictures[i].ID).find(".carousel-caption").append("<p class='statusPuzzle'>GELÖST</p><br/>");
+            } else {
+                $("#" + pictures[i].ID).find(".carousel-caption").append("<p class='statusPuzzle'>ÜBERSPRUNGEN</p><br/>");
+            }
+        }
+
+        if (pictures[i].location.Hint !== "") {
+            $("#" + pictures[i].ID).find(".carousel-caption").append("<p class='hint'>" + pictures[i].location.Hint + "</p>");
+        }
+
+        indicatorNode = "<li data-target='#myCarousel' data-slide-to='" + i + "'></li>";
+        $("main").find(".carousel-indicators").append(indicatorNode);
+
     }
-    $("main").find(".carousel-inner").append(pictureNodes);
-    $("main").find(".carousel-indicators").append(indicatorNodes);
-
     var activePicture = $("main").find(".item").first();
     activePicture.addClass("active item-active");
     puzzleId = activePicture.attr('id');
     $("li").first().addClass("active");
 }
 
+/**
+ * returns the actual Puzzle (picture) id
+ * @returns {*|jQuery}
+ */
 function getActualPuzzleId() {
     return $(".carousel-inner").find(".active").attr('id');
+}
+
+/**
+ * Shows the Game popup with a message
+ * @param message   the message to show
+ */
+function showGamePopup(message) {
+    $("#gameModalText").empty().text(message);
+    $("#gameModal").show();
 }

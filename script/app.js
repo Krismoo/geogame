@@ -33,6 +33,7 @@ function openLoginScreen() {
 function openGameScreen() {
     eraseScreen();
     game.createAndAppendGameView();
+    game.createGamePopup();
     game.loadPictures();
     game.getUserPoints();
 }
@@ -160,11 +161,12 @@ function sendAjaxCallG(url, request, type) {
 
 /**
  * proceeds the ajax calls for the Login screen
- * @param url       the url where the request gets sent to
- * @param request   the data to send
- * @param type      type of the ajax e.g. GET or POST
+ * @param url        the url where the request gets sent to
+ * @param request    the data to send
+ * @param type       type of the ajax e.g. GET or POST
+ * @param errorContainer  node where to append the error message
  */
-function sendAjaxCallL(url, request, type) {
+function sendAjaxCallL(url, request, type, errorContainer) {
     var currentToken;
     $.ajax({
         url: "api/" + url,
@@ -173,7 +175,7 @@ function sendAjaxCallL(url, request, type) {
         type: type,
         success: function (answer) {
             if (answer.hasOwnProperty('message')) {
-                createAndAppendErrorMessage($("main"), answer.message);
+                createAndAppendErrorMessage(errorContainer, answer.message);
             } else {
                 setLoggedInUser(answer.name, answer.currenttoken);
                 openMainScreen();

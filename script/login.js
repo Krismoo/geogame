@@ -40,7 +40,7 @@ var login = {
             login.loginCheck($("#usernameInput").val(), $("#passwordInput").val());
         });
 
-        body.on('click', '#closeModal', function (event) {
+        body.on('click', '.closeModal', function (event) {
             event.preventDefault();
             $("#createUserModal").hide();
         });
