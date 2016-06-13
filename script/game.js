@@ -62,7 +62,7 @@ var game = {
     giveAHint: function () {
         var request = {
             "puzzleid": getActualPuzzleId(),
-            'token': getCurrentToken()
+            "token": getCurrentToken()
         };
         sendAjaxCallG("usehint", request, "POST");
     },

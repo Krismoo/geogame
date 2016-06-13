@@ -41,16 +41,12 @@ var main = {
 
         $('body').on('click', '#logoutButton', function (event) {
             event.preventDefault();
-            var request = {token: localStorage.getItem("token")};
+            var request = {token: localStorage.getItem("token"),};
             $.ajax({
-                type: "POST",
                 url: "api/logout",
-                data: request,
+                data: JSON.stringify(request),
                 dataType: "json",
-                success: function () {
-                },
-                error: function () {
-                }
+                type: "POST"
             });
             localStorage.removeItem("token");
             openLoginScreen();

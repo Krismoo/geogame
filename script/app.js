@@ -1,8 +1,8 @@
 $(document).ready(function () {
     addListeners();
-    if(localStorage.getItem("token") !== null){
+    if (localStorage.getItem("token") !== null) {
         openGameScreen();
-    } else{
+    } else {
         openLoginScreen();
     }
 
@@ -118,7 +118,7 @@ function removeErrorMessages() {
 function setLoggedInUser(aName, aCurrentToken) {
     name = aName;
     localStorage.setItem("token", aCurrentToken);
-    console.log("Login successful: " + name + ", " +  localStorage.getItem("token"));
+    console.log("Login successful: " + name + ", " + localStorage.getItem("token"));
 }
 
 //TODO: Getters for name, token and position?
@@ -153,8 +153,6 @@ function sendAjaxCallG(url, request, type) {
         type: type,
         success: function (answer) {
             handleAjaxAnswer(url, answer);
-        },
-        error: function () {
         }
     });
 }
@@ -180,8 +178,6 @@ function sendAjaxCallL(url, request, type) {
                 setLoggedInUser(answer.name, answer.currenttoken);
                 openMainScreen();
             }
-        },
-        error: function () {
         }
     });
 }
