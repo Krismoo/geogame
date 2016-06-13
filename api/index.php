@@ -516,6 +516,7 @@
 				if($success) {
 					$resultjson = array();
 					$resultjson["message"] = "Puzzle geloest und Spielrunde beendet.";
+					$resultjson["puzzleid"] = $request["puzzleid"];
 					$resultjson["reload"] = 1;
 					echo json_encode($resultjson);
 				} else {
@@ -526,6 +527,7 @@
 			} else {
 				$resultjson = array();
 				$resultjson["message"] = "Puzzle solved.";
+				$resultjson["puzzleid"] = $request["puzzleid"];
 				$resultjson["reload"] = 0;
 				echo json_encode($resultjson);
 			}
