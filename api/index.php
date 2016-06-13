@@ -723,7 +723,7 @@
 			
 			$returnjson = array();
 			$returnjson["hint"] = $location["Hint"];
-			$returnjson["puzzleid"] = $request["puzzleid"]
+			$returnjson["puzzleid"] = $request["puzzleid"];
 			echo json_encode($returnjson);
 		} else {
 			$errorjson = array();

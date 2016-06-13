@@ -116,6 +116,7 @@ function handleAjaxAnswer(requestUrl, answer) {
     console.log(answer);
     switch (requestUrl) {
         case "usehint":
+            console.log(answer.puzzleId);
             $("#" + answer.puzzleId).find(".hint").text(answer.hint);
             break;
         case "userpoints":
