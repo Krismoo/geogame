@@ -84,6 +84,7 @@ var game = {
             type: "POST",
             success: function (answer) {
                 $("#" + answer.puzzleid).find(".carousel-caption").last().append("<p class='hint'>" + answer.hint + "</p>");
+                game.getUserPoints();
             }
         });
     },
@@ -113,9 +114,9 @@ var game = {
                 'token': getCurrentToken(),
                 'puzzleid': getActualPuzzleId(),
                 'latitude': currentPosition.coords.latitude,
-                'longitude': currentPosition.coords.longitude
+                'longitude': currentPosition.coords.longitude,
+                'tolerance': config.getVerifyDistance()
             };
-
             $.ajax({
                 url: "api/verifylocation",
                 data: JSON.stringify(request),
@@ -133,7 +134,6 @@ var game = {
                 }
             });
         });
-
     },
 
     /**
@@ -151,10 +151,9 @@ var game = {
             type: "POST",
             success: function (answer) {
                 $("#" + answer.puzzleid).find(".carousel-caption").prepend("<p class='statusPuzzle'>ÜBERSPRUNGEN</p>");
+                game.getUserPoints();
             }
         });
-
-
     },
 
     /**
@@ -183,19 +182,7 @@ function appendPictureAndIndicatorNodesInCarousel(pictures) {
             "<img src='" + pictures[i].location.Source + ".jpg' alt='Picture'>" +
             "<div class='carousel-caption'></div></section>";
         $("main").find(".carousel-inner").append(pictureNode);
-
-        if (pictures[i].done === "1") {
-            if (pictures[i].solved === "1") {
-                $("#" + pictures[i].ID).find(".carousel-caption").append("<p class='statusPuzzle'>GELÖST</p><br/>");
-            } else {
-                $("#" + pictures[i].ID).find(".carousel-caption").append("<p class='statusPuzzle'>ÜBERSPRUNGEN</p><br/>");
-            }
-        }
-
-        if (pictures[i].location.Hint !== "") {
-            $("#" + pictures[i].ID).find(".carousel-caption").append("<p class='hint'>" + pictures[i].location.Hint + "</p>");
-        }
-
+        appendCaptions(pictures[i]);
         indicatorNode = "<li data-target='#myCarousel' data-slide-to='" + i + "'></li>";
         $("main").find(".carousel-indicators").append(indicatorNode);
 
@@ -221,4 +208,32 @@ function getActualPuzzleId() {
 function showGamePopup(message) {
     $("#gameModalText").empty().text(message);
     $("#gameModal").show();
+}
+
+/**
+ * Appends the captions to a picture
+ * @param picture   the picture data to compute
+ */
+function appendCaptions(picture) {
+    if (picture.done === "1") {
+        if (picture.solved === "1") {
+            appendCaptionToCarouselCaption("statusPuzzle", picture.ID, "GELÖST");
+        } else {
+            appendCaptionToCarouselCaption("statusPuzzle", picture.ID, "ÜBERSPRUNGEN");
+        }
+    }
+
+    if (picture.location.Hint !== "") {
+        appendCaptionToCarouselCaption("hint", picture.ID, picture.location.Hint);
+    }
+}
+
+/**
+ * Appends a paragraph to a caption
+ * @param classP    the class of the element
+ * @param id        the id where the element will be added
+ * @param text      the text of the element
+ */
+function appendCaptionToCarouselCaption(classP, id, text) {
+    $("#" + id).find(".carousel-caption").append("<figcaption class='" + classP + "'>" + text + "</figcaption>");
 }
