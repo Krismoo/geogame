@@ -130,7 +130,6 @@ function setLoggedInUser(aName, aCurrentToken) {
     console.log("Login successful: " + name + ", " + localStorage.getItem("token"));
 }
 
-//TODO: Getters for name, token and position?
 /**
  * returns the token
  * @returns token from the local storage
@@ -145,29 +144,4 @@ function getCurrentToken() {
  */
 function getUserName() {
     return name;
-}
-
-/**
- * proceeds the ajax calls for the Login screen
- * @param url        the url where the request gets sent to
- * @param request    the data to send
- * @param type       type of the ajax e.g. GET or POST
- * @param errorContainer  node where to append the error message
- */
-function sendAjaxCallL(url, request, type, errorContainer) {
-    var currentToken;
-    $.ajax({
-        url: "api/" + url,
-        data: JSON.stringify(request),
-        dataType: "json",
-        type: type,
-        success: function (answer) {
-            if (answer.hasOwnProperty('message')) {
-                createAndAppendErrorMessage(errorContainer, answer.message);
-            } else {
-                setLoggedInUser(answer.name, answer.currenttoken);
-                openMainScreen();
-            }
-        }
-    });
 }

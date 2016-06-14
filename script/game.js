@@ -124,10 +124,11 @@ var game = {
                 type: "POST",
                 success: function (answer) {
                     showGamePopup(answer.message);
-                    if (answer.message === "Puzzle solved.") {
-                        $("#" + answer.puzzleid).find(".carousel-caption").prepend("<p class='statusPuzzle'>ÜBERSPRUNGEN</p>");
+                    //TODO in db anpassen!!!
+                    if (String(answer.solved) === 1) {
+                        $("#" + answer.puzzleid).find(".carousel-caption").prepend("<p class='statusPuzzle'>GELÖST</p>");
                     }
-                    if (answer.solved === 1) {
+                    if (answer.reload === 1) {
                         game.loadPictures();
                     }
                     game.getUserPoints();
