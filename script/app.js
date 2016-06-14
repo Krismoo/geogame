@@ -1,6 +1,15 @@
 $(document).ready(function () {
     addListeners();
     if (localStorage.getItem("token") !== null) {
+        $.ajax({
+            url: "api/config",
+            data: {token: getCurrentToken()},
+            dataType: "json",
+            type: "GET",
+            success: function (data) {
+                config.setVerifyDistanceGUI(data.tolerance);
+            }
+        });
         openGameScreen();
     } else {
         openLoginScreen();
@@ -137,26 +146,6 @@ function getCurrentToken() {
 function getUserName() {
     return name;
 }
-
-
-/**
- * proceeds the ajax calls for the Game screen
- * @param url       the url where the request gets sent to
- * @param request   the data to send
- * @param type      the HTML type like GET or POST
- */
-function sendAjaxCallG(url, request, type) {
-    $.ajax({
-        url: "api/" + url,
-        data: request,
-        dataType: "json",
-        type: type,
-        success: function (answer) {
-            handleAjaxAnswer(url, answer);
-        }
-    });
-}
-
 
 /**
  * proceeds the ajax calls for the Login screen
