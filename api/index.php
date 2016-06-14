@@ -606,7 +606,7 @@
 		//calc distance
 		if(!nearEnough($request["latitude"], $request["longitude"], $location, $user["tolerance"])) {
 			$errorjson = array();
-			$errorjson["message"] = "Ihre Position ist nicht nah genug. M&ouml;chten Sie den Hinweis nutzen?";
+			$errorjson["message"] = "Ihre Position ist nicht nah genug. Wollen Sie den Hinweis nutzen?";
 			echo json_encode($errorjson);
 			die();
 		}
