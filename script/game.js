@@ -123,11 +123,11 @@ var game = {
                 dataType: "json",
                 type: "POST",
                 success: function (answer) {
-                    showGamePopup(answer.message);
-                    //TODO in db anpassen!!!
-                    if (String(answer.solved) === 1) {
-                        $("#" + answer.puzzleid).find(".carousel-caption").prepend("<p class='statusPuzzle'>GELÖST</p>");
+                    if (String(answer.success) === "1") {
+                        $("#" + answer.puzzleid).find(".carousel-caption").prepend("<p class='statusPuzzle'>" + answer.message + "</p>");
                     }
+                    showGamePopup(answer.message);
+
                     if (answer.reload === 1) {
                         game.loadPictures();
                         showGamePopup("Super! Neues Spiel wird geladen");
@@ -152,7 +152,7 @@ var game = {
             dataType: "json",
             type: "POST",
             success: function (answer) {
-                $("#" + answer.puzzleid).find(".carousel-caption").prepend("<p class='statusPuzzle'>ÜBERSPRUNGEN</p>");
+                $("#" + answer.puzzleid).find(".carousel-caption").prepend("<p class='statusPuzzle'>übersprungen</p>");
                 game.getUserPoints();
                 if (answer.reload === 1) {
                     game.loadPictures();
@@ -214,7 +214,7 @@ function getActualPuzzleId() {
  * @param message   the message to show
  */
 function showGamePopup(message) {
-    $("#gameModalText").empty().text(message);
+    $("#gameModalText").empty().html(message);
     $("#gameModal").show();
 }
 
@@ -223,13 +223,9 @@ function showGamePopup(message) {
  * @param picture   the picture data to compute
  */
 function appendCaptions(picture) {
-    //TODO: in db statt boolean solved einfach gerade "statusMessage" zurückgeben!
     if (picture.done === "1") {
-        if (picture.solved === "1") {
-            appendCaptionToCarouselCaption("statusPuzzle", picture.ID, "GELÖST");
-        } else {
-            appendCaptionToCarouselCaption("statusPuzzle", picture.ID, "ÜBERSPRUNGEN");
-        }
+        console.log(picture.donetxt);
+        appendCaptionToCarouselCaption("statusPuzzle", picture.ID, picture.donetxt);
     }
 
     if (picture.location.Hint !== "") {
