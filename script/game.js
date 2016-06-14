@@ -197,7 +197,6 @@ function appendPictureAndIndicatorNodesInCarousel(pictures) {
     }
     var activePicture = $("main").find(".item").first();
     activePicture.addClass("active item-active");
-    puzzleId = activePicture.attr('id');
     $("li").first().addClass("active");
 }
 
@@ -224,7 +223,6 @@ function showGamePopup(message) {
  */
 function appendCaptions(picture) {
     if (picture.done === "1") {
-        console.log(picture.donetxt);
         appendCaptionToCarouselCaption("statusPuzzle", picture.ID, picture.donetxt);
     }
 

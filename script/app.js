@@ -27,7 +27,7 @@ $(document).ready(function () {
 // Here the global variable get defined //
 //////////////////////////////////////////
 
-var name = null;
+var name;
 
 //////////////////////////////////////
 // Here all the screens get defined //
@@ -136,7 +136,7 @@ function removeErrorMessages() {
 function setLoggedInUser(aName, aCurrentToken) {
     name = aName;
     localStorage.setItem("token", aCurrentToken);
-    console.log("Login successful: " + name + ", " + localStorage.getItem("token"));
+    localStorage.setItem("name", aName);
 }
 
 /**
@@ -152,5 +152,5 @@ function getCurrentToken() {
  * @returns string of the name
  */
 function getUserName() {
-    return name;
+    return localStorage.getItem("name");
 }

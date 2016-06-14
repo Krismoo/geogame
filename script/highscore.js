@@ -24,6 +24,7 @@ var highscore = {
      * This function loads the highscores and appends them to the table
      */
     loadHighscores: function () {
+        var name = getUserName();
         var i = 1;
         $.ajax({
             url: "api/highscore",
@@ -32,6 +33,9 @@ var highscore = {
             success: function (data) {
                 $.each(data, function () {
                     var $row = $("<tr class='content'><td>" + i + "</td><td>" + data[i - 1].name + "</td><td class='bigTd'>" + data[i - 1].score + "</td></tr>");
+                    if (String(data[i - 1].name) === name) {
+                        $row.addClass("blueRow");
+                    }
                     $(".panel-body").append($row);
                     i++;
                 });

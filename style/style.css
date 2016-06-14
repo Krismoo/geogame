@@ -119,6 +119,10 @@ body {
     overflow: hidden; /* Never scroll */
 }
 
+.blueRow{
+    background-color: deepskyblue;
+    color: white;
+}
 .hint {
     background-color: #5bc0de;
     border: solid 1px white;
