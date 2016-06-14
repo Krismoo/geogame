@@ -216,6 +216,7 @@ function showGamePopup(message) {
  * @param picture   the picture data to compute
  */
 function appendCaptions(picture) {
+    //TODO: in db statt boolean solved einfach gerade "statusMessage" zurückgeben!
     if (picture.done === "1") {
         if (picture.solved === "1") {
             appendCaptionToCarouselCaption("statusPuzzle", picture.ID, "GELÖST");
