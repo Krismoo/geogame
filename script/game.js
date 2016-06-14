@@ -130,6 +130,7 @@ var game = {
                     }
                     if (answer.reload === 1) {
                         game.loadPictures();
+                        showGamePopup("Super! Neues Spiel wird geladen");
                     }
                     game.getUserPoints();
                 }
@@ -153,6 +154,10 @@ var game = {
             success: function (answer) {
                 $("#" + answer.puzzleid).find(".carousel-caption").prepend("<p class='statusPuzzle'>ÜBERSPRUNGEN</p>");
                 game.getUserPoints();
+                if (answer.reload === 1) {
+                    game.loadPictures();
+                    showGamePopup("Super! Neues Spiel wird geladen");
+                }
             }
         });
     },
@@ -175,10 +180,12 @@ var game = {
  * @param pictures  the data for the pictures
  */
 function appendPictureAndIndicatorNodesInCarousel(pictures) {
+    $("main").find(".carousel-indicators").empty();
+    $("main").find(".carousel-inner").empty();
+
     for (var i = 0; i < pictures.length; i++) {
         var pictureNode = "";
         var indicatorNode = "";
-        // http://www.w3schools.com/bootstrap/bootstrap_carousel.asp
         pictureNode = "<section class='item' id='" + pictures[i].ID + "'>" +
             "<img src='" + pictures[i].location.Source + ".jpg' alt='Picture'>" +
             "<div class='carousel-caption'></div></section>";
