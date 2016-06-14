@@ -287,6 +287,9 @@
 			if(!$row["hintused"]) {
 				$row["location"]["Hint"] = "";
 			}
+			if($row["done"]) {
+				$row["donetxt"] = ($row["solved"] ? "gel&ouml;st" : "&uuml;bersprungen");
+			}
 			array_push($puzzlesWithLocation, $row);
 		}
 		
