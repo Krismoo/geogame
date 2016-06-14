@@ -5,7 +5,6 @@ $(document).ready(function () {
     } else {
         openLoginScreen();
     }
-
 });
 
 ///////////////////////////////////////////

@@ -1,3 +1,120 @@
+/* VIEW */
+#warning-message {
+    display: none;
+}
+
+@media only screen and (orientation: portrait) {
+    #wrapper {
+        display: none;
+    }
+
+    #warning-message {
+        display: block;
+    }
+
+    .carousel {
+        margin-top: 5%;
+        box-sizing: border-box;
+        text-align: center;
+        width: 90%;
+        margin-left: 5%;
+        max-width: 640px;
+    }
+
+    .menubtn {
+        margin-top: 20px;
+        width: 150px;
+    }
+
+    .loginSize {
+        width: 90%;
+        margin: auto;
+    }
+
+    .input-group {
+        display: inline;
+        margin-bottom: 10px;
+    }
+
+    .registerInput {
+        width: 90%;
+        display: block;
+    }
+
+    .input-group-addon:first-child {
+        border-right: solid lightgrey 1px;
+        border-top-right-radius: 6px;
+        border-bottom-left-radius: 0px;
+
+    }
+
+    #usernameInput {
+        margin-bottom: 20px;
+    }
+
+    .input-group .form-control:last-child, .input-group-addon:last-child, .input-group-btn:first-child > .btn-group:not(:first-child) > .btn, .input-group-btn:first-child > .btn:not(:first-child), .input-group-btn:last-child > .btn, .input-group-btn:last-child > .btn-group > .btn, .input-group-btn:last-child > .dropdown-toggle {
+        border-top-right-radius: 0px;
+        border-bottom-left-radius: 6px;
+        margin-bottom: 10px;
+    }
+}
+
+@media only screen and (orientation: landscape) {
+    #warning-message {
+        display: none;
+    }
+
+    .carousel {
+        margin-top: 5%;
+        float: left;
+        box-sizing: border-box;
+        text-align: center;
+        width: 65%;
+        margin-left: 5%;
+        max-width: 640px;
+    }
+
+    .menubtn {
+        float: right;
+        margin-right: 30px;
+    }
+
+    .loginSize {
+        width: 400px;
+        margin: auto;
+    }
+
+    .input-group {
+        margin-bottom: 10px;
+    }
+
+    p.input-addon-login {
+        text-align: left;
+        width: 175px;
+    }
+
+    p.input-addon-login2 {
+        text-align: right;
+        width: 125px;
+        font-weight: bold;
+    }
+
+    h4.input-group-addon {
+        text-align: right;
+        width: 160px;
+    }
+
+    #usernameInput, #passwordInput {
+        border-top-right-radius: 6px;
+        border-bottom-right-radius: 6px;
+    }
+
+}
+
+.breakMe {
+    display: block;
+}
+
 body {
     overflow: hidden; /* Never scroll */
 }
@@ -6,7 +123,6 @@ body {
     background-color: #5bc0de;
     border: solid 1px white;
     border-radius: 3px;
-    display: inline;
     text-align: left;
     padding-left: 3px;
     padding-right: 3px;
@@ -17,10 +133,11 @@ body {
     font-size: large;
     background-color: white;
     color: red;
-    display: inline;
     text-align: center;
     border-radius: 5px;
     padding: 5px;
+    display: inline-block;
+    margin: 20px;
 }
 
 main > section {
@@ -43,11 +160,6 @@ main {
     text-align: center;
 }
 
-.loginSize {
-    width: 400px;
-    margin: auto;
-}
-
 .contentSize {
     overflow: hidden; /* Never scroll */
     width: 90%;
@@ -57,26 +169,10 @@ main {
 
 /*Gameview styles*/
 
-.carousel {
-    margin-top: 5%;
-    float: left;
-    box-sizing: border-box;
-    text-align: center;
-    width: 65%;
-    margin-left: 5%;
-}
-
 .menu {
     margin-top: 3%;
-    float: left;
     box-sizing: border-box;
     text-align: center;
-    width: 30%;
-}
-
-.menubtn {
-    float: right;
-    margin-right: 30px;
 }
 
 /* Styles the mainscreen buttons */
@@ -85,11 +181,6 @@ main {
     padding-bottom: 10px;
     padding-top: 10px;
     margin-top: 10px;
-}
-
-#usernameInput, #passwordInput {
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 6px;
 }
 
 /* Styles the Highscore table*/
@@ -163,26 +254,6 @@ thead {
 
 p.item {
     margin-bottom: 0px;
-}
-
-p.input-addon-login {
-    text-align: left;
-    width: 175px;
-}
-
-p.input-addon-login2 {
-    text-align: right;
-    width: 125px;
-    font-weight: bold;
-}
-
-h4.input-group-addon {
-    text-align: right;
-    width: 160px;
-}
-
-.input-group {
-    margin-bottom: 10px;
 }
 
 .text-danger {

@@ -1,7 +1,7 @@
 /**
  * Created by Nicolas on 09.06.2016.
  */
-var verifyDistance = 1000;      //the max distance to validate a puzzle
+var verifyDistance = 500;      //the max distance to validate a puzzle
 
 /**
  * This variable defines all the functions for the config screen
@@ -32,7 +32,7 @@ var config = {
             range: "min",
             value: newVerifyDistance,
             min: 100,
-            max: 2000,
+            max: 1000,
             slide: function (event, ui) {
                 $("#range").val(ui.value+"m");
                 newVerifyDistance = ui.value;
@@ -63,5 +63,13 @@ var config = {
             event.preventDefault();
             openMainScreen();
         });
+    },
+
+    /**
+     * returns the verifyDistance
+     * @returns {number}
+     */
+    getVerifyDistance: function () {
+        return verifyDistance;
     }
 };
