@@ -343,7 +343,7 @@
 		**/
 		function scorecmp($a, $b)
 		{
-			return strcmp($b["score"], $a["score"]);
+			return $a["score"] < $b["score"];
 		}
 		//sort highscores
 		usort($highscoreObjects, "scorecmp");
