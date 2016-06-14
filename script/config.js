@@ -56,7 +56,7 @@ var config = {
 
     /**
      * This function saves the configuration in the database
-     * @param newVerifyDistance  the new maxiamal verify distance
+     * @param newVerifyDistance  the new maximal verify distance
      */
     saveConfig: function (newVerifyDistance) {
         $.ajax({

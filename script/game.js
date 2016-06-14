@@ -124,11 +124,13 @@ var game = {
                 type: "POST",
                 success: function (answer) {
                     showGamePopup(answer.message);
-                    if (answer.message === "Puzzle solved.") {
-                        $("#" + answer.puzzleid).find(".carousel-caption").prepend("<p class='statusPuzzle'>ÜBERSPRUNGEN</p>");
+                    //TODO in db anpassen!!!
+                    if (String(answer.solved) === 1) {
+                        $("#" + answer.puzzleid).find(".carousel-caption").prepend("<p class='statusPuzzle'>GELÖST</p>");
                     }
-                    if (answer.solved === 1) {
+                    if (answer.reload === 1) {
                         game.loadPictures();
+                        showGamePopup("Super! Neues Spiel wird geladen");
                     }
                     game.getUserPoints();
                 }
@@ -152,6 +154,10 @@ var game = {
             success: function (answer) {
                 $("#" + answer.puzzleid).find(".carousel-caption").prepend("<p class='statusPuzzle'>ÜBERSPRUNGEN</p>");
                 game.getUserPoints();
+                if (answer.reload === 1) {
+                    game.loadPictures();
+                    showGamePopup("Super! Neues Spiel wird geladen");
+                }
             }
         });
     },
@@ -174,10 +180,12 @@ var game = {
  * @param pictures  the data for the pictures
  */
 function appendPictureAndIndicatorNodesInCarousel(pictures) {
+    $("main").find(".carousel-indicators").empty();
+    $("main").find(".carousel-inner").empty();
+
     for (var i = 0; i < pictures.length; i++) {
         var pictureNode = "";
         var indicatorNode = "";
-        // http://www.w3schools.com/bootstrap/bootstrap_carousel.asp
         pictureNode = "<section class='item' id='" + pictures[i].ID + "'>" +
             "<img src='" + pictures[i].location.Source + ".jpg' alt='Picture'>" +
             "<div class='carousel-caption'></div></section>";
@@ -215,6 +223,7 @@ function showGamePopup(message) {
  * @param picture   the picture data to compute
  */
 function appendCaptions(picture) {
+    //TODO: in db statt boolean solved einfach gerade "statusMessage" zurückgeben!
     if (picture.done === "1") {
         if (picture.solved === "1") {
             appendCaptionToCarouselCaption("statusPuzzle", picture.ID, "GELÖST");

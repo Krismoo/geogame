@@ -1,7 +1,6 @@
 /**
  * Created by Nicolas on 09.06.2016.
  */
-var currentToken;
 
 /**
  * This variable defines all the functions for the loginscreen
@@ -57,6 +56,8 @@ var login = {
 
     /**
      * This function sends a POST with ajax to create a user
+     * @param username  the wished username
+     * @param password  the wished password
      */
     createUser: function (username, password) {
         removeErrorMessages();
@@ -64,7 +65,20 @@ var login = {
             name: username,
             password: password
         };
-        sendAjaxCallL("register", request, "POST", $("section.modal-content"));
+        $.ajax({
+            url: "api/register",
+            data: JSON.stringify(request),
+            dataType: "json",
+            type: "POST",
+            success: function (answer) {
+                if (answer.hasOwnProperty('message')) {
+                    createAndAppendErrorMessage($("section.modal-content"), answer.message);
+                } else {
+                    setLoggedInUser(answer.name, answer.currenttoken);
+                    openMainScreen();
+                }
+            }
+        });
     },
 
     /**
@@ -78,6 +92,19 @@ var login = {
             name: username,
             password: password
         };
-        sendAjaxCallL("login", request, "POST", $("main"));
+        $.ajax({
+            url: "api/login",
+            data: JSON.stringify(request),
+            dataType: "json",
+            type: "POST",
+            success: function (answer) {
+                if (answer.hasOwnProperty('message')) {
+                    createAndAppendErrorMessage($("main"), answer.message);
+                } else {
+                    setLoggedInUser(answer.name, answer.currenttoken);
+                    openMainScreen();
+                }
+            }
+        });
     }
 };

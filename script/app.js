@@ -1,3 +1,10 @@
+///////////////////////////////////////
+// function called on document ready //
+///////////////////////////////////////
+/**
+ *  if a valid token is in the local storage opens the gamescreen
+ *  and loads the config, otherwise opens the login screen
+ */
 $(document).ready(function () {
     addListeners();
     if (localStorage.getItem("token") !== null) {
@@ -16,9 +23,9 @@ $(document).ready(function () {
     }
 });
 
-///////////////////////////////////////////
-// Here the global variables get defined //
-///////////////////////////////////////////
+//////////////////////////////////////////
+// Here the global variable get defined //
+//////////////////////////////////////////
 
 var name = null;
 
@@ -47,7 +54,7 @@ function openGameScreen() {
 }
 
 /**
- * This function opens the MainScreen
+ * This function opens the main screen
  */
 function openMainScreen() {
     eraseScreen();
@@ -106,6 +113,8 @@ function addListeners() {
 
 /**
  * creates and appends an error message to a node
+ * @param node         to append the message
+ * @param message      message to show
  */
 function createAndAppendErrorMessage(node, message) {
     removeErrorMessages();
@@ -130,7 +139,6 @@ function setLoggedInUser(aName, aCurrentToken) {
     console.log("Login successful: " + name + ", " + localStorage.getItem("token"));
 }
 
-//TODO: Getters for name, token and position?
 /**
  * returns the token
  * @returns token from the local storage
@@ -145,29 +153,4 @@ function getCurrentToken() {
  */
 function getUserName() {
     return name;
-}
-
-/**
- * proceeds the ajax calls for the Login screen
- * @param url        the url where the request gets sent to
- * @param request    the data to send
- * @param type       type of the ajax e.g. GET or POST
- * @param errorContainer  node where to append the error message
- */
-function sendAjaxCallL(url, request, type, errorContainer) {
-    var currentToken;
-    $.ajax({
-        url: "api/" + url,
-        data: JSON.stringify(request),
-        dataType: "json",
-        type: type,
-        success: function (answer) {
-            if (answer.hasOwnProperty('message')) {
-                createAndAppendErrorMessage(errorContainer, answer.message);
-            } else {
-                setLoggedInUser(answer.name, answer.currenttoken);
-                openMainScreen();
-            }
-        }
-    });
 }
